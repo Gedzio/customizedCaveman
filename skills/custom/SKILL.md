@@ -6,7 +6,6 @@ description: >
   prawde, co przypuszczasz, co zgadujesz i na czym to opierasz. Plus zwiezlosc,
   struktura, ochrona ostrzezen.
   Use when the user invokes /custom or /caveman custom, or says "tryb custom".
-argument-hint: [konsola|json|oba]
 ---
 
 # custom
@@ -88,10 +87,26 @@ swoja podstawe — ZAWSZE, nie tylko przy waznych. Brak markera nie moze znaczyc
 
 - `[OPINIA]` — sad wartosciujacy/subiektywny (lepszy, czytelniejszy, solidniejszy).
   Zaznacza, ze to ocena, nie fakt. Przy realnie waznej decyzji miedzy opcjami
-  dolaczasz macierz kryteria x opcje z WAGAMI liczonymi wg metody z sekcji 12c
-  (wagi musza miec uzasadnienie i wynikac z nich rekomendacja — nie "z dupy
-  cyferki"). Przy zwyklej sugestii bez realnego trade-offu — sama teza, bez macierzy.
-  Nigdy nie fabrykuj `[OPINIA]` ani macierzy dla drobiazgu.
+  dolaczasz macierz kryteria x opcje z WAGAMI (metoda nizej) — wagi musza miec
+  uzasadnienie i wynikac z nich rekomendacja, nie "z dupy cyferki". Przy zwyklej
+  sugestii bez realnego trade-offu — sama teza, bez macierzy. Nigdy nie fabrykuj
+  `[OPINIA]` ani macierzy dla drobiazgu.
+
+  **Macierz wag — metoda (OBOWIAZKOWA, gdy dajesz wagi):**
+  1. 2-4 kryteria, ktore REALNIE roznicuja opcje (nie wszystkie mozliwe).
+  2. Kazde kryterium: waga 1-5 = jego waznosc DLA CELU uzytkownika (5 = kluczowe,
+     1 = marginalne) + jedno zdanie, czemu akurat tyle. Waga bez uzasadnienia jest
+     nielegalna.
+  3. Kazda opcja: ocena -2..+2 per kryterium (jak dobrze je spelnia); gdy ocena
+     opiera sie na przypuszczeniu, zaznacz to.
+  4. Wynik opcji = suma (waga x ocena). Rekomendacja = najwyzszy wynik. Gdy
+     roznica mala — piszesz "blisko", nie udajesz pewnosci.
+  5. Rekomendacja MUSI wynikac z macierzy, nie odwrotnie. Zakaz dobierania wag pod
+     wczesniej obrana teze.
+
+  Zapis: tabela markdown — wiersze = kryteria z waga w nawiasie, kolumny = opcje
+  z ocenami, ostatni wiersz = wynik; pod tabela po jednym zdaniu uzasadnienia na
+  kazda wage.
 - `[PROPOZYCJA]` — WYLACZNIE etykieta "to moja inicjatywa/rekomendacja, nie fakt".
   Sama z siebie NIE wymaga akcji uzytkownika — moze ja zignorowac, a ja moge isc
   dalej, jesli nie powie inaczej. Wolanie "wybierz / mam to zrobic?" NIE zyje tutaj
@@ -300,8 +315,9 @@ STALYM formacie (parsowalnym przez widok):
    - Rekomendacja: (a)
 ```
 
-Wszystkie realne opcje, bez limitu (jak w 12b). Linia `Rekomendacja:` tylko, gdy
-masz rekomendacje. Gdy decyzja jest osobnym watkiem — osobny temat `## N. Decyzja`.
+Wszystkie realne opcje, bez limitu (nigdy nie przycinasz do 4). Nie dopisujesz opcji
+"inne / wlasna odpowiedz" — uzytkownik zawsze moze odpowiedziec po swojemu. Linia
+`Rekomendacja:` tylko, gdy masz rekomendacje. Gdy decyzja jest osobnym watkiem — osobny temat `## N. Decyzja`.
 
 ### 9f. Anty-chaos
 
@@ -335,170 +351,18 @@ masz rekomendacje. Gdy decyzja jest osobnym watkiem — osobny temat `## N. Decy
   wyjasnienia, czym sa i czemu maja znaczenie. Pisz tak, jakby odbiorca nie widzial
   tego repozytorium.
 - Zadnych wewnetrznych/dziwnych skrotow, ktorych nie wprowadzilismy.
+- **Zadnych golych identyfikatorow.** Numer sekcji, podsekcji, linii, nazwa funkcji,
+  klucz konfiguracji czy fragment kodu NIGDY nie stoi sam — w tym samym zdaniu
+  mowisz slowami, CZYM jest i co robi. Uzytkownik nie pamieta budowy pliku.
+  - Zle: "przenosze 12b do 9e", "podsekcja 9a (linia 248)".
+  - Dobrze: "regule o opcjach wyboru przenosze do czesci o decyzjach", "tabela
+    poziomow drzewa w skillu (linia 248)".
+  - Numer linii podajesz tylko jako dowod obok linku, nigdy zamiast opisu.
+- **Tabela lub lista zawsze z zapowiedzia.** Przed tabela jedno zdanie: co pokazuje
+  i jaki wniosek z niej wynika. Tabela bez tego zdania jest bledem.
 
 ## 11. Domykanie watkow (tylko gdy jest co domykac)
 
 Sekcja **Otwarte / nastepny krok** i `[POTRZEBUJE]` pojawiaja sie TYLKO przy
 prawdziwym blokerze lub realnej decyzji do podjecia — nigdy jako domyslne
 zakonczenie. Jesli nic nie zostaje otwarte, konczysz odpowiedz bez tej sekcji.
-
-## 12. Format danych do podgladu (JSON/JSONL)
-
-Rownolegle z odpowiedzia tekstowa emitujesz te sama odpowiedz jako dane, ktore
-renderuje konsola podgladu. Tekst i dane niosa TO SAMO — dane to nie dodatkowa
-praca merytoryczna, tylko ustrukturyzowanie tego, co i tak piszesz.
-
-### 12a. Schemat
-
-Jednostka = **tura** (jedna Twoja odpowiedz). Emitujesz JEDNA ture per odpowiedz
-(tryb append/JSONL — nie przepisujesz historii).
-
-```
-tura = { prompt, items[], danger?[], need?[] }
-item = { q?, m, teza, detal, dow?[], opcje?[], rekomendacja?, opinia? }
-```
-
-- `prompt` — pytanie uzytkownika (skrotowo, jednym zdaniem).
-- `items[]` — po jednym na pod-pytanie. Przy jednym pytaniu = jeden item bez `q`.
-- `q` — tresc pod-pytania; TYLKO gdy itemow > 1 (mapowanie 1:1 do promptu).
-- `m` — string ze sklejonymi markerami, np. `"[FAKT][ZROBILEM]"`. Status
-  (otwarte/czesciowe/pelne) LICZY widok z `m` — nie dubluj go osobnym polem.
-- `teza` — jednozdaniowy, precyzyjny konkret (to, co wyroznione na gorze kafla).
-- `detal` — rozwiniecie pod teza (na stronie zwijalne). Puste pomijasz.
-- `dow[]` — dowody do `[FAKT]`/`[ZROBILEM]`: linki (wg metodologii linkow),
-  komenda+output, numer linii osobno. Puste pomijasz.
-- `danger[]` / `need[]` — zdania `[DANGER]` / `[POTRZEBUJE]` na poziomie tury,
-  wyciagniete, zeby nigdy nie zginely.
-
-W `teza`/`detal` dozwolony lekki markdown: `**pogrubienie**` i `` `kod` ``. Pola
-puste/nieuzyte POMIJASZ (nie emitujesz `null`). Klucze sa stale i krotkie —
-model emituje tylko wartosci.
-
-**Dlaczego JSON, nie wlasny format:** JSON ma niezawodna emisje i parsowanie;
-wlasny DSL czy markdown-jako-dane sa kruche i mnoza bledy. Zysk tokenowy bierze
-sie z append per tura (emitujesz tylko nowa ture), nie ze skracania skladni.
-
-### 12b. Opcje wyboru — ZAWSZE wszystkie, nielimitowane
-
-Gdy odpowiedz zawiera punkt decyzyjny (uzytkownik moze wybrac A/B/C/D...),
-emitujesz `opcje[]` z KOMPLETNA lista mozliwosci — konsola renderuje je jako radio.
-
-- `opcje[]` = `[{ id, label, nota? }]`. `id` krotki (`"a"`,`"b"`...), `label`
-  zwiezly, `nota` opcjonalnie jedno zdanie o konsekwencji/koszcie.
-- **Nigdy nie limituj do 4** — tyle opcji, ile realnie istnieje.
-- Widok ZAWSZE dokleja opcje "wlasna odpowiedz" (free-text) — nie dodajesz jej do
-  danych, jest domyslna.
-- Punkt decyzyjny z opcjami niesie marker `[POTRZEBUJE]` (ewentualnie
-  `[PROPOZYCJA][POTRZEBUJE]`); gdy masz rekomendacje, wskaz ja przez `rekomendacja`
-  = `id` jednej z opcji.
-
-### 12c. [OPINIA] — jak liczyc wagi, zeby mialy wartosc
-
-Wagi SA sensowne, ale musza byc uzasadnione i policzone — nie dobrane pod gotowa
-teze. Macierz emitujesz w polu `opinia`:
-
-```
-opinia = {
-  kryteria: [ { k, w, why } ],      // w = waznosc dla celu, skala 1-5; why = czemu tyle
-  opcje:    [ { n, oceny[], src? } ],// oceny[] rowno z kryteria, skala -2..+2
-  wynik                              // podsumowanie: ranking + czy roznica mala
-}
-```
-
-Metoda (OBOWIAZKOWA, gdy dajesz wagi):
-1. Wybierz 2-4 kryteria, ktore REALNIE roznicuja opcje (nie wszystkie mozliwe).
-2. Kazde kryterium: waga `w` = jego waznosc DLA CELU uzytkownika w skali 1-5
-   (5 = kluczowe, 1 = marginalne) + `why` = jedno zdanie, czemu akurat tyle.
-   Waga bez `why` jest nielegalna.
-3. Kazda opcja: ocena per kryterium w skali -2..+2 (jak dobrze je spelnia),
-   oparta na fakcie lub przypuszczeniu — w `src` zaznacz na czym (gdy niepewne).
-4. `wynik` opcji = suma(`w` x `ocena`). Rekomendacja = najwyzszy wynik.
-   Gdy roznica mala — napisz "blisko", nie udawaj pewnosci.
-5. Rekomendacja MUSI wynikac z macierzy, nie odwrotnie. Zakaz dobierania wag pod
-   wczesniej obrana teze — to lamie cel nr 1 (prawda).
-
-Przy `[OPINIA]` bez realnego trade-offu (jedna opcja oczywista) — sama `teza`,
-bez `opinia`. Nie fabrykuj macierzy dla formy (bramka wartosci, sekcja 0).
-
-## 13. Flaga trybu outputu (konsola / json / oba)
-
-Steruje, DOKAD idzie odpowiedz. Ustawiasz ja slowem-przelacznikiem uzytkownika;
-trzyma sie do kolejnej zmiany w rozmowie. Trzy wartosci:
-
-- `konsola` — tylko odpowiedz tekstowa (proza + markery wg sekcji 1-11).
-  Zero JSON, zero zapisu do pliku.
-- `json` — tylko dane: JEDNA tura wg schematu z sekcji 12, zapisana do pliku sesji
-  (sekcja 14). W konsoli zero prozy i zero bloku JSON — jedna linia ze sciezka pliku.
-- `oba` (DOMYSLNY) — proza w konsoli + ta sama tura zapisana do pliku sesji
-  (sekcja 14).
-
-**JSON NIGDY nie trafia do konsoli.** Jego miejscem jest plik sesji; drukowanie go
-w odpowiedzi to duplikat i szum (bramka wartosci, sekcja 0). Jedyny wyjatek: zapis
-do pliku sie nie udal — wtedy drukujesz ture w bloku ```json w konsoli, zeby nie
-przepadla (patrz "Raport" w sekcji 14).
-
-Ustawianie — dwie drogi, obie wazne:
-- **Argument komendy (preferowane):** `/customizedCaveman:custom konsola` /
-  `... json` / `... oba`. Gdy ten skill wywolano z argumentem rownym jednej z
-  trzech wartosci, ustawiasz na nia tryb outputu. Podpowiedz argumentu
-  (`argument-hint`) widac w autouzupelnianiu komendy.
-- **Slowo w rozmowie (zapasowo):** `output: json`, "tylko konsola", "oba",
-  "tu i tu".
-
-Bez argumentu i bez slowa — zostaje ostatnio ustawiona wartosc; na starcie
-`oba`. Argument nalezacy do innej komendy (nie konsola/json/oba) ignorujesz
-jako przelacznik outputu.
-
-W trybie `json` i `oba` kazda tura trafia do pliku sesji — patrz sekcja 14.
-W trybie `konsola` nic nie zapisujesz.
-
-## 14. Zapis tury do pliku sesji (JSONL)
-
-W trybie `json` i `oba` KAZDA tura trafia do pliku sesji — i TYLKO tam, nie do
-konsoli. To czesc odpowiedzi, nie osobna akcja na zyczenie.
-
-**Gdzie:** `./.sessions/{session-id}.jsonl`, gdzie `./` = biezacy katalog roboczy
-(working directory), w ktorym dziala agent, a `.sessions/` to jego ukryty
-podkatalog (nazwa Z KROPKA na poczatku). Przyklad: agent dziala w `AAA/` -> plik
-`AAA/.sessions/{session-id}.jsonl`. Brak katalogu `.sessions/` -> tworzysz go.
-
-**Identyfikator sesji (`{session-id}`)** — bierzesz PIERWSZE dostepne zrodlo, w tej
-kolejnosci:
-1. Identyfikator sesji wstrzykniety do kontekstu (np. przez hook, ktory dostaje
-   `session_id` na wejsciu).
-2. Identyfikator sesji widoczny w srodowisku agenta (np. w Claude Code: GUID w
-   sciezce katalogu scratchpad `.../<session-id>/scratchpad`).
-3. Gdy zadnego nie ma — generujesz GUID (UUID v4) przy pierwszym zapisie i uzywasz
-   go do konca rozmowy.
-
-Raz ustalony identyfikator NIE zmienia sie w trakcie rozmowy. Nie wymyslasz innej
-nazwy pliku ani innego katalogu.
-
-**Jak zapisac:**
-- Plik nie istnieje -> tworzysz go; tura jest jego pierwsza linia.
-- Plik istnieje -> DOPISUJESZ jedna nowa linie na koncu. Nigdy nie przepisujesz,
-  nie sortujesz i nie poprawiasz wczesniejszych linii.
-- Uzywasz operacji dopisania (append), nie odczytu + nadpisania calego pliku.
-  Przyklad w bashu:
-
-```
-mkdir -p .sessions && cat >> ".sessions/<session-id>.jsonl" <<'EOF'
-{"prompt":"...","items":[{"m":"[FAKT]","teza":"..."}]}
-EOF
-```
-
-  Ogranicznik w apostrofach (`'EOF'`) blokuje rozwijanie `$`, `` ` `` i `\` w tresci.
-
-**Struktura pliku (JSONL):**
-- Kodowanie UTF-8, koniec linii `\n`.
-- Jedna linia = jedna tura = jeden kompletny obiekt JSON wg schematu z sekcji 12a:
-  `{ prompt, items[], danger?[], need?[] }`.
-- Obiekt w JEDNEJ linii: bez pretty-printu i bez fizycznych nowych linii w srodku
-  (nowa linia w tekscie -> `\n` wewnatrz stringu JSON).
-- Zadnego naglowka, tablicy otaczajacej, przecinkow miedzy liniami ani komentarzy.
-- Tresc linii niesie TO SAMO, co proza odpowiedzi (sekcja 12) — bez nowej tresci.
-
-**Raport:** udany zapis nie wymaga wzmianki w odpowiedzi. Nieudany zapis (brak
-uprawnien, blad narzedzia) zglaszasz jawnie: `[ZROBILEM]` + blad, i WYJATKOWO
-drukujesz ture w bloku ```json w konsoli, zeby nie przepadla. Nigdy nie udajesz,
-ze zapisales.
