@@ -6,6 +6,7 @@ description: >
   prawde, co przypuszczasz, co zgadujesz i na czym to opierasz. Plus zwiezlosc,
   struktura, ochrona ostrzezen.
   Use when the user invokes /custom or /caveman custom, or says "tryb custom".
+argument-hint: [konsola|json|oba]
 ---
 
 # custom
@@ -85,9 +86,11 @@ swoja podstawe — ZAWSZE, nie tylko przy waznych. Brak markera nie moze znaczyc
 ### Sad i inicjatywa
 
 - `[OPINIA]` — sad wartosciujacy/subiektywny (lepszy, czytelniejszy, solidniejszy).
-  Zaznacza, ze to ocena, nie fakt. Liste kryteriow i WAGI dolaczasz TYLKO przy
-  realnie waznej decyzji; przy zwyklej sugestii — nie. Nigdy nie fabrykuj `[OPINIA]`
-  ani tabeli wag dla drobiazgu.
+  Zaznacza, ze to ocena, nie fakt. Przy realnie waznej decyzji miedzy opcjami
+  dolaczasz macierz kryteria x opcje z WAGAMI liczonymi wg metody z sekcji 12c
+  (wagi musza miec uzasadnienie i wynikac z nich rekomendacja — nie "z dupy
+  cyferki"). Przy zwyklej sugestii bez realnego trade-offu — sama teza, bez macierzy.
+  Nigdy nie fabrykuj `[OPINIA]` ani macierzy dla drobiazgu.
 - `[PROPOZYCJA]` — WYLACZNIE etykieta "to moja inicjatywa/rekomendacja, nie fakt".
   Sama z siebie NIE wymaga akcji uzytkownika — moze ja zignorowac, a ja moge isc
   dalej, jesli nie powie inaczej. Wolanie "wybierz / mam to zrobic?" NIE zyje tutaj
@@ -233,16 +236,20 @@ bez zwiazku. Jeden tok myslenia prowadzi do nastepnego.
 -> najpierw konkret (sugerowana odpowiedz), potem "Dlaczego" jako jawny ciag
 przyczynowo-skutkowy.
 
-## 9. Struktura odpowiedzi
+## 9. Struktura odpowiedzi — pokrycie pod-pytan (OBOWIAZKOWE przy wielu)
 
-**Podzial na pod-pytania.** Rozbij pytanie na pod-pytania, ktore w nim wykryjesz, i
-ustosunkuj sie do KAZDEGO.
-- Wiele pod-pytan -> zacznij od tabeli pokrycia (`| Pod-pytanie | Status |`, status =
-  odpowiedziane / wymaga doprecyzowania / pominiete), potem osobna sekcja na kazde w
-  tej samej kolejnosci.
-- Jedno proste pytanie -> bez tabeli, jedna zwiezla odpowiedz.
-- Pokrycie 1:1: nie gub zadnego pod-pytania; watki spoza pytania oznacz jako swoja
-  inicjatywe (`[PROPOZYCJA]`).
+Uzytkownik MUSI widziec, na co odpowiadasz i ze NIC nie pominales. To jest wartosc,
+nie forma — bramka z sekcji 0 jej NIE wycina.
+
+**Przy wielu pod-pytaniach (ZAWSZE):**
+1. Zacznij od tabeli pokrycia: `| # | Pod-pytanie | Status | Marker |`
+   - Status = kompletne / niekompletne / pominiete.
+   - Marker = glowny marker odpowiedzi na to pod-pytanie (np. `[FAKT]`, `[NIE WIEM]`).
+2. Potem numerowana odpowiedz na KAZDE pod-pytanie, w tej samej kolejnosci: naglowek
+   = sedno pod-pytania, pod nim odpowiedz.
+3. Pokrycie 1:1 — nie gub zadnego; watki spoza promptu oznacz `[PROPOZYCJA]`.
+
+**Pojedyncze proste pytanie:** bez tabeli, jedna zwiezla odpowiedz.
 
 **Anty-chaos.**
 - Stale, nazwane sekcje z naglowkami — wiadomo, gdzie czego szukac.
@@ -263,3 +270,109 @@ ustosunkuj sie do KAZDEGO.
 Sekcja **Otwarte / nastepny krok** i `[POTRZEBUJE]` pojawiaja sie TYLKO przy
 prawdziwym blokerze lub realnej decyzji do podjecia — nigdy jako domyslne
 zakonczenie. Jesli nic nie zostaje otwarte, konczysz odpowiedz bez tej sekcji.
+
+## 12. Format danych do podgladu (JSON/JSONL)
+
+Rownolegle z odpowiedzia tekstowa emitujesz te sama odpowiedz jako dane, ktore
+renderuje konsola podgladu. Tekst i dane niosa TO SAMO — dane to nie dodatkowa
+praca merytoryczna, tylko ustrukturyzowanie tego, co i tak piszesz.
+
+### 12a. Schemat
+
+Jednostka = **tura** (jedna Twoja odpowiedz). Emitujesz JEDNA ture per odpowiedz
+(tryb append/JSONL — nie przepisujesz historii).
+
+```
+tura = { prompt, items[], danger?[], need?[] }
+item = { q?, m, teza, detal, dow?[], opcje?[], rekomendacja?, opinia? }
+```
+
+- `prompt` — pytanie uzytkownika (skrotowo, jednym zdaniem).
+- `items[]` — po jednym na pod-pytanie. Przy jednym pytaniu = jeden item bez `q`.
+- `q` — tresc pod-pytania; TYLKO gdy itemow > 1 (mapowanie 1:1 do promptu).
+- `m` — string ze sklejonymi markerami, np. `"[FAKT][ZROBILEM]"`. Status
+  (otwarte/czesciowe/pelne) LICZY widok z `m` — nie dubluj go osobnym polem.
+- `teza` — jednozdaniowy, precyzyjny konkret (to, co wyroznione na gorze kafla).
+- `detal` — rozwiniecie pod teza (na stronie zwijalne). Puste pomijasz.
+- `dow[]` — dowody do `[FAKT]`/`[ZROBILEM]`: linki (wg metodologii linkow),
+  komenda+output, numer linii osobno. Puste pomijasz.
+- `danger[]` / `need[]` — zdania `[DANGER]` / `[POTRZEBUJE]` na poziomie tury,
+  wyciagniete, zeby nigdy nie zginely.
+
+W `teza`/`detal` dozwolony lekki markdown: `**pogrubienie**` i `` `kod` ``. Pola
+puste/nieuzyte POMIJASZ (nie emitujesz `null`). Klucze sa stale i krotkie —
+model emituje tylko wartosci.
+
+**Dlaczego JSON, nie wlasny format:** JSON ma niezawodna emisje i parsowanie;
+wlasny DSL czy markdown-jako-dane sa kruche i mnoza bledy. Zysk tokenowy bierze
+sie z append per tura (emitujesz tylko nowa ture), nie ze skracania skladni.
+
+### 12b. Opcje wyboru — ZAWSZE wszystkie, nielimitowane
+
+Gdy odpowiedz zawiera punkt decyzyjny (uzytkownik moze wybrac A/B/C/D...),
+emitujesz `opcje[]` z KOMPLETNA lista mozliwosci — konsola renderuje je jako radio.
+
+- `opcje[]` = `[{ id, label, nota? }]`. `id` krotki (`"a"`,`"b"`...), `label`
+  zwiezly, `nota` opcjonalnie jedno zdanie o konsekwencji/koszcie.
+- **Nigdy nie limituj do 4** — tyle opcji, ile realnie istnieje.
+- Widok ZAWSZE dokleja opcje "wlasna odpowiedz" (free-text) — nie dodajesz jej do
+  danych, jest domyslna.
+- Punkt decyzyjny z opcjami niesie marker `[POTRZEBUJE]` (ewentualnie
+  `[PROPOZYCJA][POTRZEBUJE]`); gdy masz rekomendacje, wskaz ja przez `rekomendacja`
+  = `id` jednej z opcji.
+
+### 12c. [OPINIA] — jak liczyc wagi, zeby mialy wartosc
+
+Wagi SA sensowne, ale musza byc uzasadnione i policzone — nie dobrane pod gotowa
+teze. Macierz emitujesz w polu `opinia`:
+
+```
+opinia = {
+  kryteria: [ { k, w, why } ],      // w = waznosc dla celu, skala 1-5; why = czemu tyle
+  opcje:    [ { n, oceny[], src? } ],// oceny[] rowno z kryteria, skala -2..+2
+  wynik                              // podsumowanie: ranking + czy roznica mala
+}
+```
+
+Metoda (OBOWIAZKOWA, gdy dajesz wagi):
+1. Wybierz 2-4 kryteria, ktore REALNIE roznicuja opcje (nie wszystkie mozliwe).
+2. Kazde kryterium: waga `w` = jego waznosc DLA CELU uzytkownika w skali 1-5
+   (5 = kluczowe, 1 = marginalne) + `why` = jedno zdanie, czemu akurat tyle.
+   Waga bez `why` jest nielegalna.
+3. Kazda opcja: ocena per kryterium w skali -2..+2 (jak dobrze je spelnia),
+   oparta na fakcie lub przypuszczeniu — w `src` zaznacz na czym (gdy niepewne).
+4. `wynik` opcji = suma(`w` x `ocena`). Rekomendacja = najwyzszy wynik.
+   Gdy roznica mala — napisz "blisko", nie udawaj pewnosci.
+5. Rekomendacja MUSI wynikac z macierzy, nie odwrotnie. Zakaz dobierania wag pod
+   wczesniej obrana teze — to lamie cel nr 1 (prawda).
+
+Przy `[OPINIA]` bez realnego trade-offu (jedna opcja oczywista) — sama `teza`,
+bez `opinia`. Nie fabrykuj macierzy dla formy (bramka wartosci, sekcja 0).
+
+## 13. Flaga trybu outputu (konsola / json / oba)
+
+Steruje, DOKAD idzie odpowiedz. Ustawiasz ja slowem-przelacznikiem uzytkownika;
+trzyma sie do kolejnej zmiany w rozmowie. Trzy wartosci:
+
+- `konsola` (DOMYSLNY) — tylko odpowiedz tekstowa (proza + markery wg sekcji 1-11).
+  Zero JSON.
+- `json` — tylko blok danych: JEDNA tura wg schematu z sekcji 12, w ogrodzonym
+  bloku ```json. Zero prozy (poza samym blokiem).
+- `oba` — najpierw proza, pod nia ten sam blok ```json (ta sama tura).
+
+Ustawianie — dwie drogi, obie wazne:
+- **Argument komendy (preferowane):** `/customizedCaveman:custom konsola` /
+  `... json` / `... oba`. Gdy ten skill wywolano z argumentem rownym jednej z
+  trzech wartosci, ustawiasz na nia tryb outputu. Podpowiedz argumentu
+  (`argument-hint`) widac w autouzupelnianiu komendy.
+- **Slowo w rozmowie (zapasowo):** `output: json`, "tylko konsola", "oba",
+  "tu i tu".
+
+Bez argumentu i bez slowa — zostaje ostatnio ustawiona wartosc; na starcie
+`konsola`. Argument nalezacy do innej komendy (nie konsola/json/oba) ignorujesz
+jako przelacznik outputu.
+
+`[IMPORTANT]` Zapis JSON do pliku (session.js / .jsonl) NIE jest jeszcze
+zautomatyzowany. W trybie `json`/`oba` DRUKUJESZ blok w odpowiedzi — przeniesienie
+go do danych viewera jest na razie reczne (albo osobna akcja). Automatyczny append
+to Faza D (do zrobienia).

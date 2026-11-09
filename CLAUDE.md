@@ -433,3 +433,16 @@ To reproduce: `uv run python benchmarks/run.py` (needs `ANTHROPIC_API_KEY` in `.
 - **Any entrypoint that reads a host hook payload from stdin returns on the first complete JSON object, never at EOF.** Under the Windows pipe implementation the host's close lags arbitrarily (#729/#833, #949), so a reader that waits for EOF burns the host's whole budget with its work done. The readers that follow this rule: `caveman-activate.js`, `caveman-mode-tracker.js`, `caveman-stats.js --record` and `caveman-host-session-start.js` (per-chunk parse), `packages/cli/src/native-hook-fast.ts` (`stdin()`), `readHookStdin()` in `packages/cli/src/index.ts` (shrink-hook, memory recall, native-hook), and `readNativeHookPayload` in `proxy/cmd/caveman-proxy/main.go`. A new hook callback uses one of those, not `readStdin()` or `io.ReadAll`. Each has a keep-the-writer-open regression test; add one for any new reader.
 - `installer/install.js` is the only installer source. `install.sh` / `install.ps1` at repo root are 30-line shims that delegate to it. Never re-add per-OS install logic to the shims — that's how we got the Windows quoting bug (#249).
 - Any settings.json read in installer or hooks must go through `installer/lib/settings.js` `readSettings()` so JSONC comments don't crash the merge. Any settings.json write must run through `validateHookFields()` first.
+
+---
+
+## Fork: customizedCaveman — dev workflow
+
+This fork adds the `custom` reply-style/epistemic-marker mode. Keep fork changes in `skills/custom/*` + `.claude-plugin/plugin.json`; don't touch upstream unless needed.
+
+- **After EVERY bump of `version` in `.claude-plugin/plugin.json`**: immediately output the refresh commands to the user, without being asked:
+  ```
+  claude plugin marketplace update customizedCaveman
+  claude plugin update customizedCaveman@customizedCaveman
+  ```
+  Then remind to **restart Claude Code** (the SessionStart hook reads the cache only at session start). Install COPIES to a versioned cache (`~/.claude/plugins/cache/customizedCaveman/customizedCaveman/<version>/`), so without bump + update + restart, repo edits do NOT take effect.
