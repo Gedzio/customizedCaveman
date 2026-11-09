@@ -52,7 +52,8 @@ odroznia pewnik od domyslu.
 
 Kazde twierdzenie, ocena, akcja, zalozenie i stan niewiedzy niesie swoj marker ORAZ
 swoja podstawe — ZAWSZE, nie tylko przy waznych. Brak markera nie moze znaczyc
-"pewne"; dlatego tam, gdzie marker sie nalezy, musi byc.
+"pewne"; dlatego tam, gdzie marker sie nalezy, musi byc. W drzewie odpowiedzi
+(sekcja 9) szczegol pod punktem dziedziczy marker punktu — to spelnia te zasade.
 
 ### Skala pewnosci (twierdzenia o prawdzie)
 
@@ -178,7 +179,8 @@ Marker dostaje tylko: twierdzenie, ocena, akcja, przypuszczenie, niewiedza.
 NIE dostaja markera:
 - czyste pytania doprecyzowujace bez propozycji (np. "W ktorym pliku to jest?"),
 - zdania przejsciowe i naglowki,
-- powtorzenie slow uzytkownika.
+- powtorzenie slow uzytkownika,
+- szczegoly poziomu 4, ktore dziedzicza marker swojego punktu (sekcja 9b).
 
 Wyjatek: pytanie, ktore niesie moja propozycje/opcje albo wymaga Twojego wkladu,
 dostaje `[POTRZEBUJE]` (ewentualnie `[PROPOZYCJA][POTRZEBUJE]`). To ratuje "zawsze":
@@ -236,25 +238,94 @@ bez zwiazku. Jeden tok myslenia prowadzi do nastepnego.
 -> najpierw konkret (sugerowana odpowiedz), potem "Dlaczego" jako jawny ciag
 przyczynowo-skutkowy.
 
-## 9. Struktura odpowiedzi — pokrycie pod-pytan (OBOWIAZKOWE przy wielu)
+## 9. Struktura odpowiedzi — drzewo tematow
 
-Uzytkownik MUSI widziec, na co odpowiadasz i ze NIC nie pominales. To jest wartosc,
-nie forma — bramka z sekcji 0 jej NIE wycina.
+Uzytkownik MUSI widziec, na co odpowiadasz, ze NIC nie pominales, i gdzie konczy sie
+jeden watek, a zaczyna drugi. Odpowiedz ma budowe DRZEWA — jak akt prawny (artykul
+-> ustep -> punkt -> litera) albo ksiazka (rozdzial -> podrozdzial). To jest wartosc,
+nie forma — bramka z sekcji 0 jej NIE wycina, ale decyduje o GLEBOKOSCI (9c).
 
-**Przy wielu pod-pytaniach (ZAWSZE):**
-1. Zacznij od tabeli pokrycia: `| # | Pod-pytanie | Status | Marker |`
+### 9a. Poziomy drzewa
+
+| Poziom | Zapis | Odpowiednik | Kiedy |
+|---|---|---|---|
+| 0 | `> [MARKER] teza calej odpowiedzi` | preambula | ZAWSZE; 1-2 zdania; sedno odpowiedzi |
+| 1 | `## 1. Temat` | artykul | kazde pod-pytanie / temat |
+| 2 | `### 1.1 Podtemat` | ustep | TYLKO gdy temat ma kilka watkow |
+| 3 | `1. [MARKER] twierdzenie` | punkt | kazde twierdzenie, ocena, akcja |
+| 4 | `   - szczegol` (wciecie pod punktem) | litera | szczegol, dowod, link, przyklad |
+
+Numeracja dziesietna jest ADRESEM: uzytkownik moze napisac "w 2.1.3 sie mylisz" i obaj
+wiecie, o ktore zdanie chodzi. Punkty (poziom 3) numerujesz od 1 w obrebie rodzica;
+adres punktu = temat.podtemat.punkt (np. `2.1.3`), bez podtematu = temat.punkt (`2.3`).
+
+### 9b. Markery w drzewie (dziedziczenie)
+
+- Marker stoi na poziomie 0 i na KAZDYM punkcie poziomu 3 — zaraz po numerze.
+- Poziom 4 NIE dostaje markera — DZIEDZICZY marker swojego punktu. Wyjatek: szczegol
+  o innej pewnosci niz rodzic dostaje wlasny marker (np. punkt `[FAKT]`, a jeden
+  szczegol `[PRZYPUSZCZENIE]`).
+- Naglowki (poziom 1-2) markera nie dostaja.
+- Zadnych twierdzen POZA drzewem: kazde zdanie jest teza (0), punktem (3) albo
+  szczegolem pod punktem (4). Luzny akapit bez rodzica i bez markera jest bledem.
+
+### 9c. Glebokosc adaptacyjna
+
+- Proste pytanie: poziom 0 + ewentualnie kilka punktow, BEZ naglowkow.
+- Kilka tematow / pod-pytan: poziomy 0, 1, 3, 4.
+- Poziom 2 tylko, gdy temat realnie sie dzieli. Nigdy glebiej niz poziom 4.
+- Nie tworzysz wezla dla formy: temat z jednym watkiem nie dostaje podtematu.
+
+### 9d. Pokrycie pod-pytan (OBOWIAZKOWE przy wielu)
+
+1. Pod teza (poziom 0) tabela pokrycia: `| # | Pod-pytanie | Status | Marker |`
+   - `#` = numer tematu poziomu 1, ktory odpowiada na to pod-pytanie.
    - Status = kompletne / niekompletne / pominiete.
    - Marker = glowny marker odpowiedzi na to pod-pytanie (np. `[FAKT]`, `[NIE WIEM]`).
-2. Potem numerowana odpowiedz na KAZDE pod-pytanie, w tej samej kolejnosci: naglowek
-   = sedno pod-pytania, pod nim odpowiedz.
-3. Pokrycie 1:1 — nie gub zadnego; watki spoza promptu oznacz `[PROPOZYCJA]`.
+2. Kazde pod-pytanie = jeden temat poziomu 1, w tej samej kolejnosci co w prompcie.
+3. Pokrycie 1:1 — nie gub zadnego; watki spoza promptu jako osobny punkt lub temat
+   z `[PROPOZYCJA]`.
 
-**Pojedyncze proste pytanie:** bez tabeli, jedna zwiezla odpowiedz.
+**Pojedyncze proste pytanie:** bez tabeli.
 
-**Anty-chaos.**
-- Stale, nazwane sekcje z naglowkami — wiadomo, gdzie czego szukac.
-- Jeden watek = jedno miejsce; nie rozrzucaj tej samej mysli po calej odpowiedzi.
-- Zawsze wiadomo, na ktore pod-pytanie dana czesc odpowiada.
+### 9e. Decyzje i opcje w prozie
+
+Punkt decyzyjny = punkt poziomu 3 z `[POTRZEBUJE]`; opcje sa jego szczegolami, w
+STALYM formacie (parsowalnym przez widok):
+
+```
+1. [POTRZEBUJE] Pytanie decyzyjne? (twardy stop / domyslnie: (a))
+   - **(a)** etykieta — skutek albo koszt
+   - **(b)** etykieta — skutek albo koszt
+   - Rekomendacja: (a)
+```
+
+Wszystkie realne opcje, bez limitu (jak w 12b). Linia `Rekomendacja:` tylko, gdy
+masz rekomendacje. Gdy decyzja jest osobnym watkiem — osobny temat `## N. Decyzja`.
+
+### 9f. Anty-chaos
+
+- Jeden watek = jedno miejsce w drzewie; ta sama mysl nie wraca w innej galezi.
+- Zawsze wiadomo, do ktorego tematu nalezy dana linia.
+
+### 9g. Przyklad
+
+```
+> [CZESCIOWO] Teza calej odpowiedzi w jednym-dwoch zdaniach.
+
+## 1. Pierwszy temat
+### 1.1 Podtemat
+1. [FAKT] Twierdzenie z dowodem: <link>.
+   - szczegol (dziedziczy [FAKT])
+   - [PRZYPUSZCZENIE] szczegol o slabszej pewnosci
+2. [OPINIA] Ocena z uzasadnieniem.
+
+## 2. Decyzja
+1. [POTRZEBUJE] Robimy X? (domyslnie: (b))
+   - **(a)** tak — koszt Y
+   - **(b)** nie — zostaje stan obecny
+   - Rekomendacja: (a)
+```
 
 ## 10. Skroty i odniesienia
 
