@@ -58,6 +58,7 @@ const canonicalMode = cavemanConfig.canonicalMode
 const MODE_COMMANDS = {
   '/ultracave': 'ultracave', '/caveman:ultracave': 'ultracave',
   '/megacave': 'megacave', '/caveman:megacave': 'megacave',
+  '/custom': 'custom', '/caveman:custom': 'custom',
 };
 
 // Modes handled by their own slash commands (/caveman-commit, etc.) — not

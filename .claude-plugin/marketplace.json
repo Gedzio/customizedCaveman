@@ -1,15 +1,14 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "caveman",
-  "description": "Ultra-compressed communication mode. Shortens prose while preserving technical terms, code, commands, and exact errors.",
+  "name": "customizedCaveman",
+  "description": "Personal reply-style toolkit (fork of caveman). Adds a custom mode defining how agents answer.",
   "owner": {
-    "name": "Julius Brussee",
-    "url": "https://github.com/JuliusBrussee"
+    "name": "ka"
   },
   "plugins": [
     {
-      "name": "caveman",
-      "description": "Talk like caveman. Cut filler. Keep technical details explicit.",
+      "name": "customizedCaveman",
+      "description": "Custom reply-style mode: fixed structure, epistemic tags, sub-problem coverage, anti-chaos. Built on caveman's mechanism.",
       "source": "./",
       "category": "productivity"
     }

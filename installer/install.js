@@ -907,7 +907,7 @@ function installViaSkills(ctx, prov) {
 // one whose command runs our script; foreign hooks and the caveman CLI's
 // native-hook entries are never touched. --no-hooks / --minimal skip it.
 const CODEX_PAYLOAD_DIR = 'caveman';
-const CODEX_HOOK_SKILLS = ['caveman', 'ultracave', 'megacave'];
+const CODEX_HOOK_SKILLS = ['caveman', 'ultracave', 'megacave', 'custom'];
 
 function codexHome() {
   return process.env.CODEX_HOME || path.join(os.homedir(), '.codex');

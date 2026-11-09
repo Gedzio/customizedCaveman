@@ -37,7 +37,7 @@ const os = require('os');
 // One stored id per skill: skills/caveman, skills/ultracave, skills/megacave,
 // plus the one-shot modes and the durable off.
 const VALID_MODES = [
-  'off', 'caveman', 'ultracave', 'megacave',
+  'off', 'caveman', 'ultracave', 'megacave', 'custom',
   'commit', 'review', 'compress'
 ];
 
@@ -771,7 +771,7 @@ function readHistory(filePath) {
 // name, so a second shared sibling is a standing drift risk. This module is
 // already the one file every loader resolves.
 
-const SKILL_MODES = ['caveman', 'ultracave', 'megacave'];
+const SKILL_MODES = ['caveman', 'ultracave', 'megacave', 'custom'];
 
 // Used when no SKILL.md resolves (standalone hook install without skills dir).
 // Each is the first line under the skill's `# <id>` heading.

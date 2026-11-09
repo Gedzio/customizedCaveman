@@ -49,7 +49,7 @@ const os = require('os');
 // copy stays equal to the real one; tests/hooks/codex-sessionstart.test.mjs
 // asserts this copy does too.
 const FALLBACK_VALID_MODES = [
-  'off', 'caveman', 'ultracave', 'megacave',
+  'off', 'caveman', 'ultracave', 'megacave', 'custom',
   'commit', 'review', 'compress'
 ];
 // Hand-copy of caveman-config.js LEGACY_MODES: a config still naming a
