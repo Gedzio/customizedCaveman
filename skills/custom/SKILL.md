@@ -355,10 +355,16 @@ Steruje, DOKAD idzie odpowiedz. Ustawiasz ja slowem-przelacznikiem uzytkownika;
 trzyma sie do kolejnej zmiany w rozmowie. Trzy wartosci:
 
 - `konsola` — tylko odpowiedz tekstowa (proza + markery wg sekcji 1-11).
-  Zero JSON.
-- `json` — tylko blok danych: JEDNA tura wg schematu z sekcji 12, w ogrodzonym
-  bloku ```json. Zero prozy (poza samym blokiem).
-- `oba` (DOMYSLNY) — najpierw proza, pod nia ten sam blok ```json (ta sama tura).
+  Zero JSON, zero zapisu do pliku.
+- `json` — tylko dane: JEDNA tura wg schematu z sekcji 12, zapisana do pliku sesji
+  (sekcja 14). W konsoli zero prozy i zero bloku JSON — jedna linia ze sciezka pliku.
+- `oba` (DOMYSLNY) — proza w konsoli + ta sama tura zapisana do pliku sesji
+  (sekcja 14).
+
+**JSON NIGDY nie trafia do konsoli.** Jego miejscem jest plik sesji; drukowanie go
+w odpowiedzi to duplikat i szum (bramka wartosci, sekcja 0). Jedyny wyjatek: zapis
+do pliku sie nie udal — wtedy drukujesz ture w bloku ```json w konsoli, zeby nie
+przepadla (patrz "Raport" w sekcji 14).
 
 Ustawianie — dwie drogi, obie wazne:
 - **Argument komendy (preferowane):** `/customizedCaveman:custom konsola` /
@@ -372,13 +378,13 @@ Bez argumentu i bez slowa — zostaje ostatnio ustawiona wartosc; na starcie
 `oba`. Argument nalezacy do innej komendy (nie konsola/json/oba) ignorujesz
 jako przelacznik outputu.
 
-W trybie `json` i `oba` kazda tura trafia DODATKOWO do pliku sesji — patrz
-sekcja 14. W trybie `konsola` nic nie zapisujesz.
+W trybie `json` i `oba` kazda tura trafia do pliku sesji — patrz sekcja 14.
+W trybie `konsola` nic nie zapisujesz.
 
 ## 14. Zapis tury do pliku sesji (JSONL)
 
-W trybie `json` i `oba` KAZDA tura, ktora drukujesz w bloku ```json, zapisujesz
-tez do pliku sesji. To czesc odpowiedzi, nie osobna akcja na zyczenie.
+W trybie `json` i `oba` KAZDA tura trafia do pliku sesji — i TYLKO tam, nie do
+konsoli. To czesc odpowiedzi, nie osobna akcja na zyczenie.
 
 **Gdzie:** `./.sessions/{session-id}.jsonl`, gdzie `./` = biezacy katalog roboczy
 (working directory), w ktorym dziala agent, a `.sessions/` to jego ukryty
@@ -419,8 +425,9 @@ EOF
 - Obiekt w JEDNEJ linii: bez pretty-printu i bez fizycznych nowych linii w srodku
   (nowa linia w tekscie -> `\n` wewnatrz stringu JSON).
 - Zadnego naglowka, tablicy otaczajacej, przecinkow miedzy liniami ani komentarzy.
-- Tresc linii = DOKLADNIE ten sam obiekt, ktory drukujesz w bloku ```json odpowiedzi.
+- Tresc linii niesie TO SAMO, co proza odpowiedzi (sekcja 12) — bez nowej tresci.
 
 **Raport:** udany zapis nie wymaga wzmianki w odpowiedzi. Nieudany zapis (brak
-uprawnien, blad narzedzia) zglaszasz jawnie: `[ZROBILEM]` + blad. Nigdy nie udajesz,
+uprawnien, blad narzedzia) zglaszasz jawnie: `[ZROBILEM]` + blad, i WYJATKOWO
+drukujesz ture w bloku ```json w konsoli, zeby nie przepadla. Nigdy nie udajesz,
 ze zapisales.
