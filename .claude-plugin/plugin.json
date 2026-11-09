@@ -1,6 +1,6 @@
 {
   "name": "customizedCaveman",
-  "version": "4.0.9",
+  "version": "4.0.10",
   "description": "Personal reply-style toolkit (fork of caveman). Adds a custom mode defining how agents answer: structure, epistemic tags, sub-problem coverage.",
   "author": {
     "name": "Julius Brussee",
@@ -39,6 +39,18 @@
             "command": "command -v node >/dev/null 2>&1 || exit 0; HOOK_ROOT=$(printf %s \"${CLAUDE_PLUGIN_ROOT}\" | sed 's|^/\\([a-zA-Z]\\)/|\\1:/|'); node \"$HOOK_ROOT/src/hooks/caveman-mode-tracker.js\"",
             "timeout": 30,
             "statusMessage": "Tracking caveman mode..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "command -v node >/dev/null 2>&1 || exit 0; HOOK_ROOT=$(printf %s \"${CLAUDE_PLUGIN_ROOT}\" | sed 's|^/\\([a-zA-Z]\\)/|\\1:/|'); node \"$HOOK_ROOT/src/hooks/caveman-session-log.js\"",
+            "timeout": 10,
+            "async": true
           }
         ]
       }
