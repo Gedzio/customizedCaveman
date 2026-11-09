@@ -354,11 +354,11 @@ bez `opinia`. Nie fabrykuj macierzy dla formy (bramka wartosci, sekcja 0).
 Steruje, DOKAD idzie odpowiedz. Ustawiasz ja slowem-przelacznikiem uzytkownika;
 trzyma sie do kolejnej zmiany w rozmowie. Trzy wartosci:
 
-- `konsola` (DOMYSLNY) — tylko odpowiedz tekstowa (proza + markery wg sekcji 1-11).
+- `konsola` — tylko odpowiedz tekstowa (proza + markery wg sekcji 1-11).
   Zero JSON.
 - `json` — tylko blok danych: JEDNA tura wg schematu z sekcji 12, w ogrodzonym
   bloku ```json. Zero prozy (poza samym blokiem).
-- `oba` — najpierw proza, pod nia ten sam blok ```json (ta sama tura).
+- `oba` (DOMYSLNY) — najpierw proza, pod nia ten sam blok ```json (ta sama tura).
 
 Ustawianie — dwie drogi, obie wazne:
 - **Argument komendy (preferowane):** `/customizedCaveman:custom konsola` /
@@ -369,10 +369,58 @@ Ustawianie — dwie drogi, obie wazne:
   "tu i tu".
 
 Bez argumentu i bez slowa — zostaje ostatnio ustawiona wartosc; na starcie
-`konsola`. Argument nalezacy do innej komendy (nie konsola/json/oba) ignorujesz
+`oba`. Argument nalezacy do innej komendy (nie konsola/json/oba) ignorujesz
 jako przelacznik outputu.
 
-`[IMPORTANT]` Zapis JSON do pliku (session.js / .jsonl) NIE jest jeszcze
-zautomatyzowany. W trybie `json`/`oba` DRUKUJESZ blok w odpowiedzi — przeniesienie
-go do danych viewera jest na razie reczne (albo osobna akcja). Automatyczny append
-to Faza D (do zrobienia).
+W trybie `json` i `oba` kazda tura trafia DODATKOWO do pliku sesji — patrz
+sekcja 14. W trybie `konsola` nic nie zapisujesz.
+
+## 14. Zapis tury do pliku sesji (JSONL)
+
+W trybie `json` i `oba` KAZDA tura, ktora drukujesz w bloku ```json, zapisujesz
+tez do pliku sesji. To czesc odpowiedzi, nie osobna akcja na zyczenie.
+
+**Gdzie:** `./.sessions/{session-id}.jsonl`, gdzie `./` = biezacy katalog roboczy
+(working directory), w ktorym dziala agent, a `.sessions/` to jego ukryty
+podkatalog (nazwa Z KROPKA na poczatku). Przyklad: agent dziala w `AAA/` -> plik
+`AAA/.sessions/{session-id}.jsonl`. Brak katalogu `.sessions/` -> tworzysz go.
+
+**Identyfikator sesji (`{session-id}`)** — bierzesz PIERWSZE dostepne zrodlo, w tej
+kolejnosci:
+1. Identyfikator sesji wstrzykniety do kontekstu (np. przez hook, ktory dostaje
+   `session_id` na wejsciu).
+2. Identyfikator sesji widoczny w srodowisku agenta (np. w Claude Code: GUID w
+   sciezce katalogu scratchpad `.../<session-id>/scratchpad`).
+3. Gdy zadnego nie ma — generujesz GUID (UUID v4) przy pierwszym zapisie i uzywasz
+   go do konca rozmowy.
+
+Raz ustalony identyfikator NIE zmienia sie w trakcie rozmowy. Nie wymyslasz innej
+nazwy pliku ani innego katalogu.
+
+**Jak zapisac:**
+- Plik nie istnieje -> tworzysz go; tura jest jego pierwsza linia.
+- Plik istnieje -> DOPISUJESZ jedna nowa linie na koncu. Nigdy nie przepisujesz,
+  nie sortujesz i nie poprawiasz wczesniejszych linii.
+- Uzywasz operacji dopisania (append), nie odczytu + nadpisania calego pliku.
+  Przyklad w bashu:
+
+```
+mkdir -p .sessions && cat >> ".sessions/<session-id>.jsonl" <<'EOF'
+{"prompt":"...","items":[{"m":"[FAKT]","teza":"..."}]}
+EOF
+```
+
+  Ogranicznik w apostrofach (`'EOF'`) blokuje rozwijanie `$`, `` ` `` i `\` w tresci.
+
+**Struktura pliku (JSONL):**
+- Kodowanie UTF-8, koniec linii `\n`.
+- Jedna linia = jedna tura = jeden kompletny obiekt JSON wg schematu z sekcji 12a:
+  `{ prompt, items[], danger?[], need?[] }`.
+- Obiekt w JEDNEJ linii: bez pretty-printu i bez fizycznych nowych linii w srodku
+  (nowa linia w tekscie -> `\n` wewnatrz stringu JSON).
+- Zadnego naglowka, tablicy otaczajacej, przecinkow miedzy liniami ani komentarzy.
+- Tresc linii = DOKLADNIE ten sam obiekt, ktory drukujesz w bloku ```json odpowiedzi.
+
+**Raport:** udany zapis nie wymaga wzmianki w odpowiedzi. Nieudany zapis (brak
+uprawnien, blad narzedzia) zglaszasz jawnie: `[ZROBILEM]` + blad. Nigdy nie udajesz,
+ze zapisales.
