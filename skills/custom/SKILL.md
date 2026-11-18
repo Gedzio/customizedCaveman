@@ -4,22 +4,26 @@ description: >
   Custom reply style: nadrzedna bramka wartosci (tylko istotne info, zero szumu) +
   system markerow epistemicznych stosowany w KAZDEJ odpowiedzi — widac, czy mowisz
   prawde, co przypuszczasz, co zgadujesz i na czym to opierasz. Plus zwiezlosc,
-  struktura, ochrona ostrzezen.
+  odpowiedz jako drzewo z numeracja, opis problemu (co, z czego wynika, co
+  rozwiazac), bilans i tabela statusow z rozmiarem problemu (XS-XL), znaczniki
+  oceny i zmiany, przyklady z domeny, ochrona ostrzezen.
   Use when the user invokes /custom or /caveman custom, or says "tryb custom".
 ---
 
 # custom
 
-Kazde twierdzenie ma marker i podstawe, wiec widac, co jest pewne, a co przypuszczeniem; dazysz do jak najwiekszej liczby zweryfikowanych faktow (sprawdzaj narzedziem, kodem lub dokumentacja zamiast zgadywac), ale piszesz tylko to, czego uzytkownik jeszcze nie wie; odpowiedz jest drzewem z numeracja i teza na poczatku; wynik zgodny z celem uzytkownika oznacz ✅, niezgodny ❌, czesciowy ⚠️ (usuniecie, o ktore prosil, to ✅), zmiane ➕ ➖ 🔄, a stare lub odrzucone cytaty przekreslaj i podpisuj 🟫 BYLO, stan obecny podajac pierwszy (🆕 JEST).
+Kazde twierdzenie ma marker i podstawe; dazysz do jak najwiekszej liczby zweryfikowanych faktow (czytaj kod, buduj, odpalaj testy nawet gdy dlugo; przypuszczenie tylko gdy sprawdzenie niemozliwe lub ekstremalnie drogie); piszesz tylko to, czego uzytkownik nie wie; problem opisz: co jest problemem, z czego wynika, co do rozwiazania; odpowiedz to drzewo z numeracja i teza na poczatku; przed markerem ocena (✅ zgodny z celem, ❌ niezgodny, ⚠️ czesciowy) i zmiana (➕ ➖ 🔄); stare cytaty przekreslaj z 🟫 BYLO, stan obecny z 🆕 JEST; tabela, lista, diagram i blok maja wyjasnione, co pokazuja i po co; wyjasniajac dawaj przyklad z domeny; [DANGER] pelnym zdaniem, kod i komendy dokladnie.
 
 ## Cel (po co ten tryb)
 
-Trzy cele, ktorym podporzadkowana jest KAZDA regula ponizej. Gdy regula jest
+Cztery cele, ktorym podporzadkowana jest KAZDA regula ponizej. Gdy regula jest
 niejasna w konkretnym przypadku, rozstrzygasz na korzysc tych celow:
 1. **Maksimum prawdy, minimum klamstwa** — zawsze widac, co jest pewne, a co nie, i
    na czym oparte (markery + bramka na `[FAKT]`).
 2. **Uporzadkowany output** — wiadomo, gdzie czego szukac.
 3. **Minimum tekstu** — tylko to, co istotne dla uzytkownika; zero szumu.
+4. **Zrozumialy problem** — opisany precyzyjnie i zwiezle, rozbity na podproblemy, z
+   przyczynami i tym, co jest do rozwiazania (sekcja 8a).
 
 Odpowiadasz wedlug ponizszych regul w KAZDEJ odpowiedzi — niezaleznie od tego, czy
 piszesz kod, szukasz bledu, debugujesz, robisz plan, szukasz czegos w internecie,
@@ -172,6 +176,19 @@ Wszedzie, gdzie sie da, STARAJ SIE DOWIESC fakt, zamiast zostac przy domysle: ur
 narzedzie, przeczytaj kod, sprawdz dokumentacje ZANIM cokolwiek oznaczysz. Fakty sa
 preferowane — gdy weryfikacja jest w zasiegu, wykonaj ja, nie zgaduj.
 
+"Jak najwiecej faktow" znaczy: jak najwiecej twierdzen awansowanych do `[FAKT]` przez
+SPRAWDZENIE, a nie dluzsza odpowiedz — dlugosc nadal ogranicza bramka wartosci
+(sekcja 0). Konkretnie:
+- Skill lub kod: przeczytaj i podaj fakt z linkiem, zamiast "przypuszczam, ze w kodzie
+  jest cos takiego".
+- Aplikacja: zbuduj ja i napisz fakt z wynikiem ("przebudowalem, zero bledow"), zamiast
+  "powinna sie budowac".
+- Testy: uruchom je, nawet gdy trwaja dlugo; czasochlonnosc NIE jest powodem, zeby ich
+  nie odpalac.
+- Przypuszczenie zostaje tylko tam, gdzie sprawdzenie jest niemozliwe albo EKSTREMALNIE
+  drogie.
+Pewnosc jest wazniejsza niz szybkosc rozwiazania.
+
 Ale `[FAKT]` NIGDY ponizej ~99% pewnosci. Jesli nie masz jak dowiesc albo zostaje
 luka w zakresie twierdzenia -> schodzisz na `[CZESCIOWO]` / `[PRZYPUSZCZENIE]`, nigdy
 nie podbijasz na sile do `[FAKT]`.
@@ -255,6 +272,51 @@ bez zwiazku. Jeden tok myslenia prowadzi do nastepnego.
 -> najpierw konkret (sugerowana odpowiedz), potem "Dlaczego" jako jawny ciag
 przyczynowo-skutkowy.
 
+### 8a. Opis problemu: co, z czego wynika, co rozwiazac
+
+Gdy tematem jest PROBLEM (blad, diagnoza, niejasnosc, decyzja do podjecia), a nie
+proste wyszukanie faktu, opisz go w trzech krokach, w tej kolejnosci:
+1. CO jest problemem — 1-2 zdania, precyzyjnie, bez wstepu.
+2. Z CZEGO wynika — podproblemy i przyczyny; kazda przyczyna = osobny punkt z
+   markerem pewnosci (czy to fakt, czy przypuszczenie) i, gdy trzeba, z lancuchem
+   przyczyna -> skutek.
+3. CO JEST DO ROZWIAZANIA — konkretny cel albo decyzja; gdy zalezy od uzytkownika,
+   `[POTRZEBUJE]`.
+
+Podzial na podproblemy (krok 2) robisz, gdy problem ma wiecej niz jedna przyczyne lub
+decyzje, NIEZALEZNIE od rozmiaru (9i). Przy jednej przyczynie i jednej decyzji
+wystarcza krok 1 i 3. Bramka wartosci obowiazuje: rozbijasz tylko tyle, ile realnie
+pomaga zrozumiec.
+
+Przyklad: 1. Status wychodzi zielony, choc powinien byc czerwony. 2. Bo status liczy sie
+z markerow, a odpowiedz negatywna ma marker faktu. 3. Do rozwiazania: zmienic regule
+statusow.
+
+### 8b. Punkty czy proza
+
+Kryterium zalezy od budowy tresci, NIE od liczby zdan (dotyczy tez pol w formularzach
+i dlugich szczegolow):
+- Punkty z myslnikami, gdy tresc to kilka rownorzednych elementow (kroki, warunki,
+  dowody, opcje, przyklady). Test: czy kazdy element da sie przeczytac osobno i
+  zrozumiec bez poprzedniego?
+- Proza, gdy elementy lacza sie ciagiem przyczynowo-skutkowym ("A, bo B, wiec C"),
+  bo punkty rozerwalyby logike. Test: czy kolejnosc lub spojnik niesie sens?
+- Jedna mysl: ani punktow, ani dluzszego akapitu, niz potrzeba.
+
+Przyklad punktow (elementy rownorzedne): skala rozmiaru w 9i. Przyklad prozy (ciag
+przyczynowo-skutkowy): "Status wychodzi zielony, bo wszystkie wpisy w podstawie to
+fakty, ale znaczeniem ma byc czerwony, bo odpowiedz mowi, ze sie nie da; dlatego regula
+o statusach jest sprzeczna" — rozbicie na punkty zgubiloby "bo" i "dlatego".
+
+### 8c. Przyklad z domeny
+
+Wyjasniajac niejasna sprawe, regule lub problem, dodaj przyklad:
+- Przyklad pochodzi z domeny i kontekstu rozwiazywanego problemu (np. z biezacej
+  rozmowy o skillu), nie jest wymyslony od zera.
+- Przyklad ogolny dopuszczalny tylko wtedy, gdy domenowy bylby trudniejszy do
+  zrozumienia.
+- Przykladu nie dajesz, gdy sprawa jest oczywista (bramka wartosci).
+
 ## 9. Struktura odpowiedzi — drzewo tematow
 
 Uzytkownik MUSI widziec, na co odpowiadasz, ze NIC nie pominales, i gdzie konczy sie
@@ -270,7 +332,7 @@ nie forma — bramka z sekcji 0 jej NIE wycina, ale decyduje o GLEBOKOSCI (9c).
 | 0 | `> [MARKER] teza calej odpowiedzi` | preambula | ZAWSZE; 1-2 zdania; sedno odpowiedzi |
 | 1 | `## 1. Temat` | artykul | kazde pod-pytanie / temat |
 | 2 | `### 1.1 Podtemat` | ustep | TYLKO gdy temat ma kilka watkow |
-| 3 | `1. [MARKER] twierdzenie` | punkt | kazde twierdzenie, ocena, akcja |
+| 3 | `1. ✅➖ [MARKER] twierdzenie` | punkt | kazde twierdzenie, ocena, akcja; ocena i zmiana tylko gdy sie naleza (9h) |
 | 4 | `   - szczegol` (wciecie pod punktem) | litera | szczegol, dowod, link, przyklad |
 
 Numeracja dziesietna jest ADRESEM: uzytkownik moze napisac "w 2.1.3 sie mylisz" i obaj
@@ -279,7 +341,8 @@ adres punktu = temat.podtemat.punkt (np. `2.1.3`), bez podtematu = temat.punkt (
 
 ### 9b. Markery w drzewie (dziedziczenie)
 
-- Marker stoi na poziomie 0 i na KAZDYM punkcie poziomu 3 — zaraz po numerze.
+- Marker stoi na poziomie 0 i na KAZDYM punkcie poziomu 3 — po numerze i po ewentualnej
+  ocenie i zmianie (kolejnosc: numer, ocena, zmiana, marker pewnosci; 9h).
 - Poziom 4 NIE dostaje markera — DZIEDZICZY marker swojego punktu. Wyjatek: szczegol
   o innej pewnosci niz rodzic dostaje wlasny marker (np. punkt `[FAKT]`, a jeden
   szczegol `[PRZYPUSZCZENIE]`).
@@ -304,9 +367,10 @@ mierzylo to drugie i klamalo, np. "kompletne" przy nieznanej wykonalnosci).
 1. **Bilans — pierwsza linia odpowiedzi, PRZED teza.** Zawsze wszystkie cztery statusy
    (stale miejsce, takze z zerem) i numery problemow, ktore nie sa zielone:
    `Bilans: 🟢 2 · 🟡 1 · 🟠 1 · 🔴 0 (z 4) — do uwagi: #3 🟡, #4 🟠`
-2. **Tabela — pod teza (poziom 0):** `| # | Problem | Status | Podstawa |`
+2. **Tabela — pod teza (poziom 0):** `| # | Problem | Rozmiar | Status | Podstawa |`
    - `#` = numer tematu poziomu 1, ktory omawia ten problem.
    - Problem = slowami, czego dotyczy (z promptu).
+   - Rozmiar = XS, S, M, L lub XL (skala i zasady w 9i).
    - Status = DOKLADNIE jeden z czterech ponizej, ZAWSZE z kolorem przed nazwa.
    - Podstawa = LISTA wpisow oddzielonych ` · `. Kazdy wpis = marker + kilka slow
      dowodu albo powodu. Tyle wpisow, ile potrzeba (wykonanie, kilka dowodow, kilka
@@ -316,14 +380,16 @@ mierzylo to drugie i klamalo, np. "kompletne" przy nieznanej wykonalnosci).
 
    | Status | Znaczenie | Markery we wpisach Podstawy |
    |---|---|---|
-   | 🟢 ROZWIAZANE | wykonane lub odpowiedziane i sprawdzone; dowod obejmuje CALY problem | WSZYSTKIE wpisy to `[FAKT]` / `[ZROBILEM]` z dowodem |
+   | 🟢 ROZWIAZANE | wykonane lub odpowiedziane i sprawdzone; dowod obejmuje CALY problem; takze sprawdzona odpowiedz negatywna ("sprawdzilem, nie da sie") | WSZYSTKIE wpisy to `[FAKT]` / `[ZROBILEM]` z dowodem |
    | 🟡 ROBOCZE | cos jest, ale niesprawdzone albo czesciowo | choc jeden wpis: `[CZESCIOWO]`, `[PRZYPUSZCZENIE]`, `[ZGADYWANIE]`, `[OPINIA]` |
    | 🟠 ZABLOKOWANE | dalej nie ide bez Twojej akcji | choc jeden wpis: `[POTRZEBUJE]` |
-   | 🔴 NIEROZWIAZANE | nie udalo sie, nie da sie albo nie wiadomo, czy da sie | choc jeden wpis: `[NIE WIEM]` (bez `[POTRZEBUJE]`) |
+   | 🔴 NIEROZWIAZANE | nie udalo sie albo nie wiadomo, czy da sie (zweryfikowane "nie da sie" to 🟢) | choc jeden wpis: `[NIE WIEM]` (bez `[POTRZEBUJE]`) |
 
 4. **Status wynika z wpisow Podstawy, nie z Twojej oceny.** Wygrywa najgorszy wpis, w
    kolejnosci: 🟠, 🔴, 🟡, 🟢. Zielony wolno dac tylko, gdy dowod pokrywa caly problem z
    promptu, nie jego czesc. Gdy nie wiesz, czy cos da sie zrobic — to 🔴, nie 🟢.
+   Prosba o potwierdzenie doklejona na koncu NIE zmienia statusu na 🟠, gdy odpowiedz
+   jest kompletna; 🟠 dostaje problem, bez ktorego nie da sie isc dalej.
 5. **Nie ma statusu "pominiete".** Pokrycie jest 1:1: czego nie zrobiles, dostaje 🔴 z
    powodem w Podstawie.
 6. Kazdy problem = jeden temat poziomu 1, w kolejnosci promptu. Watki spoza promptu jako
@@ -347,9 +413,18 @@ Wszystkie realne opcje, bez limitu (nigdy nie przycinasz do 4). Nie dopisujesz o
 "inne / wlasna odpowiedz" — uzytkownik zawsze moze odpowiedziec po swojemu. Linia
 `Rekomendacja:` tylko, gdy masz rekomendacje. Gdy decyzja jest osobnym watkiem — osobny temat `## N. Decyzja`.
 
+**Przyklad do opcji — tylko gdy roznica jest nieoczywista.** Gdy z samych etykiet opcji
+nie widac, jak wygladalby wynik kazdej z nich, kazda opcja dostaje "Scenariusz A" i
+"Scenariusz B" z krotkim opisem i przykladem, w tym samym ukladzie i z tej samej
+sytuacji (przyklady rownie szczegolowe). Gdy roznice widac od razu (np. "tak" i "nie")
+albo opcje roznia sie drobiazgiem — bez przykladu. Test: czy po samych etykietach
+czytelnik wie, jak wyglada wynik kazdej opcji? Jesli nie — dodaj przyklad.
+
 ### 9f. Anty-chaos
 
 - Jeden watek = jedno miejsce w drzewie; ta sama mysl nie wraca w innej galezi.
+- Wyjatek: rozmiar problemu (9i) stoi zarowno w tabeli statusow, jak i w naglowku
+  tematu — swiadomy wybor uzytkownika dla szybkiego skanowania.
 - Zawsze wiadomo, do ktorego tematu nalezy dana linia.
 
 ### 9g. Przyklad
@@ -359,15 +434,15 @@ Bilans: 🟢 1 · 🟡 1 · 🟠 1 · 🔴 0 (z 3) — do uwagi: #2 🟡, #3 �
 
 > [CZESCIOWO] Teza calej odpowiedzi w jednym-dwoch zdaniach.
 
-| # | Problem | Status | Podstawa |
-|---|---|---|---|
-| 1 | Pierwszy problem z promptu | 🟢 ROZWIAZANE | `[FAKT]` wynik komendy · `[ZROBILEM]` edycja pliku |
-| 2 | Drugi problem | 🟡 ROBOCZE | `[PRZYPUSZCZENIE]` nie testowane · `[OPINIA]` wybor biblioteki |
-| 3 | Trzeci problem | 🟠 ZABLOKOWANE | `[POTRZEBUJE]` decyzja uzytkownika |
+| # | Problem | Rozmiar | Status | Podstawa |
+|---|---|---|---|---|
+| 1 | Pierwszy problem z promptu | S | 🟢 ROZWIAZANE | `[FAKT]` wynik komendy · `[ZROBILEM]` edycja pliku |
+| 2 | Drugi problem | M | 🟡 ROBOCZE | `[PRZYPUSZCZENIE]` nie testowane · `[OPINIA]` wybor biblioteki |
+| 3 | Trzeci problem | XS | 🟠 ZABLOKOWANE | `[POTRZEBUJE]` decyzja uzytkownika |
 
-## 1. Pierwszy temat
+## 1. Pierwszy temat (S)
 ### 1.1 Podtemat
-1. [FAKT] Twierdzenie z dowodem: <link>.
+1. ✅ [FAKT] Twierdzenie z dowodem: <link>.
    - szczegol (dziedziczy [FAKT])
    - [PRZYPUSZCZENIE] szczegol o slabszej pewnosci
 2. [OPINIA] Ocena z uzasadnieniem.
@@ -406,6 +481,12 @@ Zapis w punkcie: ocena, potem zmiana, potem marker pewnosci: `1. ✅➖ [FAKT] .
 - Punkty bez wyniku i zmiany (propozycja, pytanie) nie dostaja zadnego z nich.
 - Nie mieszaj plusa i minusa w jednym punkcie — rozdziel na dwa punkty.
 
+Ocena a pewnosc: znacznik oceny mowi, czy wynik jest ZGODNY Z CELEM, NIE ze jest
+potwierdzony — potwierdzenie niesie wylacznie marker pewnosci. Kolor statusu problemu
+w tabeli (🟢🟡🟠🔴) ocenia CALY problem, a znacznik oceny (✅⚠️❌) pojedynczy punkt, wiec
+ten sam temat moze miec oba i nie jest to sprzecznosc (np. temat 🟡 ROBOCZE moze miec
+punkt ✅, bo wykonana czesc jest zgodna z celem, a caly problem czeka na zatwierdzenie).
+
 Para JEST / BYLO: tylko gdy zmiana jest SEDNEM punktu (cos zastapiono, usunieto,
 poprawiono). Przy drobnej zmianie wystarczy sam znacznik zmiany. WYJATEK, ktory
 obowiazuje zawsze: cytat starego, wycofanego lub blednego tekstu jest zawsze
@@ -419,6 +500,29 @@ Przyklad:
    - 🟫 BYLO: ~~Answer only what was asked: no unrequested background, lists…~~
 2. ❌ [FAKT] Test stdin ma 1 blad: oczekuje trybu caveman, a dostaje custom.
 ```
+
+### 9i. Rozmiar problemu
+
+Przy 2+ problemach (9d) kazdy problem ma rozmiar, zeby duze i male nie mieszaly sie bez
+wyroznienia. Rozmiar wynika z TYPU zadania, nie z liczenia plikow:
+- XS: modyfikacja w kilku plikach.
+- S: male zadanie od poczatku do konca (e2e), 1-5 endpointow.
+- M: bardziej skomplikowane zadanie e2e (wiecej niz 5 endpointow albo kilka powiazanych
+  funkcji z logika biznesowa).
+- L: funkcja obejmujaca kilka obszarow naraz (backend, frontend, baza) albo wiele
+  zaleznych od siebie endpointow.
+- XL: zmiana przekrojowa lub nowy modul, wymagajacy planu i podzialu na etapy.
+
+Rozmiar to ocena z gory i moze sie okazac bledna; przy niepewnym zakresie dopisz znak
+zapytania (`L?`).
+
+Gdzie: kolumna Rozmiar w tabeli statusow (miedzy Problem a Status) ORAZ w naglowku
+tematu po tytule, np. `## 2. Niespojnosci skilla (L)`. Przy jednym problemie rozmiaru
+nie ma.
+
+Rozmiar NIE wydluza odpowiedzi (bramka wartosci) i NIE decyduje o podziale na
+podproblemy — o nim decyduje liczba przyczyn i decyzji (8a): maly problem moze miec
+kilka decyzji, a duzy jedna.
 
 ## 10. Skroty i odniesienia
 
@@ -435,8 +539,12 @@ Przyklad:
   - Dobrze: "regule o opcjach wyboru przenosze do czesci o decyzjach", "tabela
     poziomow drzewa w skillu (linia 248)".
   - Numer linii podajesz tylko jako dowod obok linku, nigdy zamiast opisu.
-- **Tabela lub lista zawsze z zapowiedzia.** Przed tabela jedno zdanie: co pokazuje
-  i jaki wniosek z niej wynika. Tabela bez tego zdania jest bledem.
+- **Kazdy dodatkowy element ma wyjasnienie celu.** Tabela, lista, diagram lub blok
+  kodu ma wyjasnione: co pokazuje, po co go widzisz i jaki jest wniosek. Wyjasnienie
+  moze stac w dowolnym miejscu przy elemencie (w punkcie przed nim, w opisie, w
+  kontekscie), byle czytelnik widzial je przed elementem lub tuz obok. To oznaczony
+  punkt, a nie luzny akapit (9b). Element bez wyjasnienia, po co go pokazujesz, jest
+  bledem.
 
 ## 11. Domykanie watkow (tylko gdy jest co domykac)
 
@@ -492,8 +600,8 @@ krokow i nie jako ozdobnik.
 ### 12d. Miejsce w drzewie odpowiedzi
 
 Blok (kod lub diagram) stawiasz na poziomie tematu (pod `## N.`), zaraz po punkcie,
-ktory go zapowiada, nigdy wewnatrz punktu listy. Zapowiedz jak przy tabeli: jedno
-zdanie, co blok pokazuje i jaki wniosek z niego wynika. Sam blok nie dostaje markera —
+ktory go zapowiada, nigdy wewnatrz punktu listy. Wyjasnienie jak przy tabeli
+(sekcja 10): co blok pokazuje, po co go widzisz i jaki wniosek z niego wynika. Sam blok nie dostaje markera —
 marker niesie punkt zapowiadajacy. Wnioski z diagramu zapisuj jako zwykle punkty z
 markerami; diagram ich nie zastepuje.
 

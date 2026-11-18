@@ -779,7 +779,7 @@ const FALLBACK_THESIS = {
   caveman: 'Respond terse like smart caveman. All technical substance stay. Only fluff die.',
   ultracave: 'Respond terse like smart caveman. All technical substance stay. Only fluff die. Then cut again.',
   megacave: '以文言答。技術之實皆存，唯贅言去之。',
-  custom: 'Kazde twierdzenie ma marker i podstawe, wiec widac, co jest pewne, a co przypuszczeniem; dazysz do jak najwiekszej liczby zweryfikowanych faktow (sprawdzaj narzedziem, kodem lub dokumentacja zamiast zgadywac), ale piszesz tylko to, czego uzytkownik jeszcze nie wie; odpowiedz jest drzewem z numeracja i teza na poczatku; wynik zgodny z celem uzytkownika oznacz ✅, niezgodny ❌, czesciowy ⚠️ (usuniecie, o ktore prosil, to ✅), zmiane ➕ ➖ 🔄, a stare lub odrzucone cytaty przekreslaj i podpisuj 🟫 BYLO, stan obecny podajac pierwszy (🆕 JEST).',
+  custom: 'Kazde twierdzenie ma marker i podstawe; dazysz do jak najwiekszej liczby zweryfikowanych faktow (czytaj kod, buduj, odpalaj testy nawet gdy dlugo; przypuszczenie tylko gdy sprawdzenie niemozliwe lub ekstremalnie drogie); piszesz tylko to, czego uzytkownik nie wie; problem opisz: co jest problemem, z czego wynika, co do rozwiazania; odpowiedz to drzewo z numeracja i teza na poczatku; przed markerem ocena (✅ zgodny z celem, ❌ niezgodny, ⚠️ czesciowy) i zmiana (➕ ➖ 🔄); stare cytaty przekreslaj z 🟫 BYLO, stan obecny z 🆕 JEST; tabela, lista, diagram i blok maja wyjasnione, co pokazuja i po co; wyjasniajac dawaj przyklad z domeny; [DANGER] pelnym zdaniem, kod i komendy dokladnie.',
 };
 
 // Candidate locations, tried in order (#587/#589 — the old single '..' path

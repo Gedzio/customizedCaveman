@@ -145,6 +145,16 @@ test('custom reinforcement is its own thesis, without the generic answer-scope s
   assert.strictEqual(ctx, 'CAVEMAN MODE ACTIVE (custom). ' + thesis);
 });
 
+test('custom built-in fallback thesis equals the thesis line in skills/custom/SKILL.md', () => {
+  // FALLBACK_THESIS is not exported; read its source so the two copies cannot drift.
+  const skill = fs.readFileSync(path.join(REPO_ROOT, 'skills', 'custom', 'SKILL.md'), 'utf8').split(/\r?\n/);
+  const thesis = skill.slice(skill.indexOf('# custom') + 1).find((l) => l.trim()).trim();
+  const src = fs.readFileSync(path.join(REPO_ROOT, 'src', 'hooks', 'caveman-config.js'), 'utf8');
+  const m = src.match(/^\s*custom:\s*'((?:[^'\\]|\\.)*)',?$/m);
+  assert.ok(m, 'FALLBACK_THESIS.custom not found in caveman-config.js');
+  assert.strictEqual(m[1].replace(/\\(.)/g, '$1'), thesis);
+});
+
 test('independent modes get no prose ruleset', () => {
   // /caveman-commit has its own skill; the base rules would conflict with it.
   const ctx = runTracker(slash('caveman-commit', ''), 'caveman');
