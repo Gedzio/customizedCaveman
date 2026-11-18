@@ -135,6 +135,16 @@ test('reinforcement carries the thesis line read from the mode\'s SKILL.md', () 
   }
 });
 
+test('custom reinforcement is its own thesis, without the generic answer-scope sentence', () => {
+  const file = fs.readFileSync(path.join(REPO_ROOT, 'skills', 'custom', 'SKILL.md'), 'utf8');
+  const lines = file.split(/\r?\n/);
+  const thesis = lines.slice(lines.indexOf('# custom') + 1).find((l) => l.trim()).trim();
+  assert.ok(!thesis.startsWith('#'), `thesis is a heading, not a sentence: ${thesis}`);
+  assert.strictEqual(thesisLine('custom', path.join(REPO_ROOT, 'src', 'hooks')), thesis);
+  const ctx = runTracker('why is this test failing', 'custom');
+  assert.strictEqual(ctx, 'CAVEMAN MODE ACTIVE (custom). ' + thesis);
+});
+
 test('independent modes get no prose ruleset', () => {
   // /caveman-commit has its own skill; the base rules would conflict with it.
   const ctx = runTracker(slash('caveman-commit', ''), 'caveman');

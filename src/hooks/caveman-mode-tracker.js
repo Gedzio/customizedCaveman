@@ -113,7 +113,11 @@ const prevPath = path.join(claudeDir, '.caveman-active.prev');
 // drift from the skill. The answer-scope sentence (#1136/#1162) is shared by
 // all three modes.
 function reinforcementForMode(mode) {
-  return 'CAVEMAN MODE ACTIVE (' + mode + '). ' + thesisLine(mode, __dirname) +
+  const head = 'CAVEMAN MODE ACTIVE (' + mode + '). ' + thesisLine(mode, __dirname);
+  // custom ma wlasne reguly struktury (tabele, drzewa, diagramy); ogolne zdanie
+  // o zwiezlosci im przeczy, wiec dla custom go nie doklejamy.
+  if (mode === 'custom') return head;
+  return head +
     ' Answer only what was asked: no unrequested background, lists, examples,' +
     ' walkthroughs, or follow-up offers; give code, steps, or warnings when the' +
     ' task needs them. Security warnings, irreversible actions, multi-step order:' +

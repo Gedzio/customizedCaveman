@@ -779,6 +779,7 @@ const FALLBACK_THESIS = {
   caveman: 'Respond terse like smart caveman. All technical substance stay. Only fluff die.',
   ultracave: 'Respond terse like smart caveman. All technical substance stay. Only fluff die. Then cut again.',
   megacave: '以文言答。技術之實皆存，唯贅言去之。',
+  custom: 'Kazde twierdzenie ma marker i podstawe, wiec widac, co jest pewne, a co przypuszczeniem; dazysz do jak najwiekszej liczby zweryfikowanych faktow (sprawdzaj narzedziem, kodem lub dokumentacja zamiast zgadywac), ale piszesz tylko to, czego uzytkownik jeszcze nie wie; odpowiedz jest drzewem z numeracja i teza na poczatku.',
 };
 
 // Candidate locations, tried in order (#587/#589 — the old single '..' path
