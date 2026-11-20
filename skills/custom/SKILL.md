@@ -417,6 +417,11 @@ wyjasnienie, MUSI miec unikalny adres w tej odpowiedzi.
   odpowiedzi zapisuje pelna referencje, np. `#16/1.2.3`. Jezeli nie potrafi ustalic
   numeru jednoznacznie, nie tworzy skrotu zastepczego: prosi o pelna referencje z
   markerem `[POTRZEBUJE]`.
+- Uzytkownik moze dopisac wlasne tematy oznaczone `T1`, `T2` … (np. `T1 calosc jest
+  za dluga`). To komentarze do calej odpowiedzi albo nowej sprawy, nie do jednego
+  punktu. Na kazdy temat odpowiadasz osobnym wezlem, ktory go nazywa, np.
+  `^2. [FAKT] Temat T1 (calosc za dluga): ...`. Numer tematu obowiazuje tylko w
+  wiadomosci, w ktorej padl; w pozniejszej turze wskazujesz go przez swoj wezel.
 - Jezeli uzytkownik podaje pelna referencje, pierwszenstwo ma wskazana tura, nawet
   gdy biezaca odpowiedz ma punkt o takim samym numerze.
 - Jezeli referencja nie istnieje albo bez numeru tury moze wskazywac kilka rozsadnych
