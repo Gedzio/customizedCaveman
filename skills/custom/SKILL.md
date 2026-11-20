@@ -393,7 +393,8 @@ wyjasnienie, MUSI miec unikalny adres w tej odpowiedzi.
   option    = letter, { ".", positive-int };
   letter    = "a" | "b" | ... | "z";
   target    = "^", point, ".";
-  reference = "#", (positive-int | "this"), "/", point;
+  reference = "#", (positive-int | "this"), "/", (point | topic);
+  topic     = "T", positive-int;
   ```
 
 - Litera na koncu numeru (`2.1a`) oznacza WYLACZNIE opcje pytania decyzyjnego `2.1`
@@ -418,10 +419,11 @@ wyjasnienie, MUSI miec unikalny adres w tej odpowiedzi.
   numeru jednoznacznie, nie tworzy skrotu zastepczego: prosi o pelna referencje z
   markerem `[POTRZEBUJE]`.
 - Uzytkownik moze dopisac wlasne tematy oznaczone `T1`, `T2` … (np. `T1 calosc jest
-  za dluga`). To komentarze do calej odpowiedzi albo nowej sprawy, nie do jednego
-  punktu. Na kazdy temat odpowiadasz osobnym wezlem, ktory go nazywa, np.
-  `^2. [FAKT] Temat T1 (calosc za dluga): ...`. Numer tematu obowiazuje tylko w
-  wiadomosci, w ktorej padl; w pozniejszej turze wskazujesz go przez swoj wezel.
+  za dluga`). To komentarze do calej odpowiedzi albo nowa sprawa, nie do jednego
+  punktu. `T1` nie jest numerem punktu: twoja numeracja biegnie dalej normalnie, a na
+  kazdy temat odpowiadasz osobnym wezlem, ktory wskazuje temat referencja
+  `#numer-tury/T1`, np. `^2. [FAKT] W #16/T1 (calosc za dluga): ...`. W odpowiedzi na
+  te sama wiadomosc mozesz pisac `#this/T1`.
 - Jezeli uzytkownik podaje pelna referencje, pierwszenstwo ma wskazana tura, nawet
   gdy biezaca odpowiedz ma punkt o takim samym numerze.
 - Jezeli referencja nie istnieje albo bez numeru tury moze wskazywac kilka rozsadnych

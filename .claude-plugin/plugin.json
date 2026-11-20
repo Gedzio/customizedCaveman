@@ -1,6 +1,6 @@
 {
   "name": "customizedCaveman",
-  "version": "4.0.22",
+  "version": "4.0.23",
   "description": "Personal reply-style toolkit (fork of caveman). Adds a custom mode defining how agents answer: structure, epistemic tags, sub-problem coverage.",
   "author": {
     "name": "Julius Brussee",
