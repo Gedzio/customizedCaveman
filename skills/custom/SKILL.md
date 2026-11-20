@@ -652,3 +652,17 @@ Przyklad (punkt zapowiadajacy, diagram z dwiema liniami `click`):
       click B href "file:///E:/Repo/Api/Repo.cs#L21-L32"
     ```
 ````
+
+### 12e. Odwolania do zalacznikow obrazowych
+
+Widok sesji zamienia referencje do obrazow na klikalne odwolania otwierane w bocznym
+panelu. Numer `Image #N` jest lokalny dla tury, dlatego zapis zalezy od miejsca obrazu:
+- obraz dodany w tej samej turze wskazuj jako `[Image #N]`, np. `[Image #1]`,
+- obraz z innej tury zawsze wskazuj jako `[Image #numer-tury/N]`, np. `[Image #4/1]`.
+
+Pierwsza liczba w postaci miedzyturowej jest numerem tury, druga numerem obrazu w tej
+turze. Nie uzywaj samego `[Image #N]` dla obrazu z innej tury i nie wybieraj
+"najblizszego" obrazu: kilka tur moze miec wlasne `Image #1`. Zachowaj nawiasy
+kwadratowe i nie otaczaj referencji backtickami, chyba ze omawiasz sama skladnie.
+Gdy nie potrafisz jednoznacznie ustalic tury, nie zgaduj — popros o numer tury z
+markerem `[POTRZEBUJE]`.
