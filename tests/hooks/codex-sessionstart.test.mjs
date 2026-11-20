@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -15,7 +15,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const requireCjs = createRequire(import.meta.url);
 const { VALID_MODES } = requireCjs(join(root, 'src', 'hooks', 'caveman-config.js'));
 
-// Full layout copy — .codex (hook + manifest), src (shared resolver) and
+// Full layout copy — .codex (installer payload source), src (shared resolver) and
 // skills (SKILL.md) — so every test runs the fixture's own copy of the hook
 // exactly as a repo checkout would resolve it, with no reads escaping into
 // the developer's real config. A space in the temp name stress-tests quoting.
@@ -35,6 +35,8 @@ function fixture(t) {
   delete env.CLAUDE_PLUGIN_ROOT;
   env.HOME = dir;
   env.USERPROFILE = dir;
+  env.APPDATA = join(dir, 'AppData', 'Roaming');
+  env.LOCALAPPDATA = join(dir, 'AppData', 'Local');
   return { dir, env };
 }
 
@@ -47,19 +49,12 @@ function runHook(item, cwd, extraEnv = {}) {
   });
 }
 
-test('.codex/hooks.json manifest is valid and points at the hook script', () => {
-  const manifest = JSON.parse(readFileSync(join(root, '.codex', 'hooks.json'), 'utf8'));
-  const entries = manifest.hooks.SessionStart;
-  assert.ok(Array.isArray(entries) && entries.length === 1);
-  assert.equal(entries[0].matcher, 'startup|resume');
-  const hook = entries[0].hooks[0];
-  assert.equal(hook.type, 'command');
-  // Codex runs command hooks with the SESSION cwd as working directory and
-  // may be launched from a subdirectory, so the documented pattern for
-  // repo-local hooks is git-root resolution — a bare relative path would
-  // make node fail to find the script and caveman silently never activate.
-  assert.match(hook.command, /git rev-parse --show-toplevel/);
-  assert.match(hook.command, /node .*codex-sessionstart\.js/);
+test('checkout does not register repo-local hooks beside the global installer hooks', () => {
+  assert.equal(
+    existsSync(join(root, '.codex', 'hooks.json')),
+    false,
+    'repo-local hooks duplicate the SessionStart and Stop entries installed in $CODEX_HOME/hooks.json',
+  );
 });
 
 test('hand-copied fallback whitelist stays equal to caveman-config VALID_MODES', async () => {

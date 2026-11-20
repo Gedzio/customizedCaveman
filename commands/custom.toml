@@ -1,0 +1,2 @@
+description = "Custom reply mode: evidence markers, structured answers, and full session logging"
+prompt = "Activate custom mode. Follow the custom skill's complete rules from the loaded context. Every claim needs its epistemic marker and basis; answer as a numbered tree; keep only useful information. Behavior persists until the session ends or the user switches mode."

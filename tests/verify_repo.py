@@ -308,7 +308,6 @@ def verify_manifests_and_syntax() -> None:
         ROOT / ".claude-plugin/marketplace.json",
         ROOT / ".cursor-plugin/plugin.json",
         ROOT / "hooks/hooks-cursor.json",
-        ROOT / ".codex/hooks.json",
         ROOT / "gemini-extension.json",
         ROOT / "plugins/caveman/.codex-plugin/plugin.json",
     ]
@@ -321,6 +320,10 @@ def verify_manifests_and_syntax() -> None:
         not (ROOT / "hooks/hooks.json").exists(),
         "hooks/hooks.json is auto-loaded by Claude Code and Gemini; "
         "Cursor's hook lives in hooks/hooks-cursor.json",
+    )
+    ensure(
+        not (ROOT / ".codex/hooks.json").exists(),
+        ".codex/hooks.json duplicates the global Codex hooks installed in $CODEX_HOME/hooks.json",
     )
 
     claude_manifest = read_json(claude_manifest_path)
@@ -377,6 +380,7 @@ def verify_manifests_and_syntax() -> None:
         "caveman-parse.js",
         "caveman-activate.js",
         "caveman-mode-tracker.js",
+        "caveman-session-log.js",
         "caveman-stats.js",
         "caveman-statusline.sh",
         "caveman-statusline.ps1",
@@ -396,6 +400,7 @@ def verify_manifests_and_syntax() -> None:
     run(["node", "--check", "src/hooks/caveman-parse.js"])
     run(["node", "--check", "src/hooks/caveman-activate.js"])
     run(["node", "--check", "src/hooks/caveman-mode-tracker.js"])
+    run(["node", "--check", "src/hooks/caveman-session-log.js"])
     run(["node", "--check", "src/hooks/cavecrew-model-overrides.js"])
     run(["node", "--check", "src/hooks/caveman-host-session-start.js"])
     run(["node", "--check", "installer/install.js"])

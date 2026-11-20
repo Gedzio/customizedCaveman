@@ -17,6 +17,7 @@ import { isolatedEnv } from './_isolated-env.mjs';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const INSTALLER = path.join(ROOT, 'installer', 'install.js');
 const HOOK_REL = 'caveman/hooks/codex-sessionstart.js';
+const STOP_REL = 'caveman/hooks/caveman-session-log.js';
 
 function sandbox(t, codexDir = 'codex home') {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'caveman codex hooks '));
@@ -44,42 +45,49 @@ function sandbox(t, codexDir = 'codex home') {
 }
 
 const isOurs = (entry) => (entry.hooks || []).some((h) => String(h.command).replace(/\\/g, '/').includes(HOOK_REL));
+const isOurStop = (entry) => (entry.hooks || []).some((h) => String(h.command).replace(/\\/g, '/').includes(STOP_REL));
 
-test('codex install merges exactly one SessionStart hook, even when run twice', (t) => {
-  const { codexHome, readHooks, run } = sandbox(t);
+test('codex install merges exactly one SessionStart and Stop hook, even when run twice', (t) => {
+  const { dir, codexHome, readHooks, run } = sandbox(t);
   for (let i = 0; i < 2; i++) {
     const r = run('--only', 'codex');
     assert.equal(r.status, 0, r.stdout + r.stderr);
   }
   const ours = readHooks().hooks.SessionStart.filter(isOurs);
   assert.equal(ours.length, 1, JSON.stringify(readHooks()));
+  assert.equal(readHooks().hooks.Stop.filter(isOurStop).length, 1, JSON.stringify(readHooks()));
   assert.equal(ours[0].hooks[0].type, 'command');
   // compact too: Codex 0.160 sends SessionStart source "compact", and
   // compaction is what prunes the injected ruleset.
   assert.equal(ours[0].matcher, 'startup|resume|clear|compact');
-  for (const rel of [HOOK_REL, 'caveman/hooks/caveman-config.js', 'caveman/hooks/package.json',
-    'caveman/skills/caveman/SKILL.md', 'caveman/skills/ultracave/SKILL.md', 'caveman/skills/megacave/SKILL.md']) {
+  for (const rel of [HOOK_REL, STOP_REL, 'caveman/hooks/caveman-config.js', 'caveman/hooks/package.json',
+    'caveman/skills/caveman/SKILL.md', 'caveman/skills/ultracave/SKILL.md', 'caveman/skills/megacave/SKILL.md', 'caveman/skills/custom/SKILL.md']) {
     assert.ok(fs.existsSync(path.join(codexHome, ...rel.split('/'))), `${rel} missing`);
   }
+  assert.ok(fs.existsSync(path.join(dir, '.agents', 'skills', 'custom', 'SKILL.md')), 'Codex-discoverable custom skill missing');
 });
 
 test('foreign and caveman CLI native-hook entries survive install and uninstall', (t) => {
   const { hooksPath, readHooks, codexHome, run } = sandbox(t);
   const foreign = { matcher: 'startup', hooks: [{ type: 'command', command: 'echo user hook' }] };
+  const foreignStop = { hooks: [{ type: 'command', command: 'echo user stop hook' }] };
   const native = { hooks: [{ type: 'command', command: 'caveman native-hook codex' }] };
-  const before = { theme: 'kept', hooks: { SessionStart: [foreign, native], PreToolUse: [native] } };
+  const before = { theme: 'kept', hooks: { SessionStart: [foreign, native], Stop: [foreignStop], PreToolUse: [native] } };
   fs.writeFileSync(hooksPath, JSON.stringify(before, null, 2) + '\n');
 
   assert.equal(run('--only', 'codex').status, 0);
   const merged = readHooks();
   assert.deepEqual(merged.hooks.SessionStart.slice(0, 2), [foreign, native]);
   assert.equal(merged.hooks.SessionStart.filter(isOurs).length, 1);
+  assert.equal(merged.hooks.Stop.filter(isOurStop).length, 1);
+  assert.deepEqual(merged.hooks.Stop[0], foreignStop);
   assert.deepEqual(merged.hooks.PreToolUse, [native]);
 
   const r = run('--uninstall');
   assert.equal(r.status, 0, r.stdout + r.stderr);
   assert.deepEqual(readHooks(), before);
   assert.equal(fs.existsSync(path.join(codexHome, 'caveman')), false, 'owned payload must be removed');
+  assert.equal(fs.existsSync(path.join(path.dirname(codexHome), '.agents', 'skills', 'custom')), false, 'owned global custom skill must be removed');
 });
 
 test('uninstall deletes a hooks.json that only held the caveman entry', (t) => {

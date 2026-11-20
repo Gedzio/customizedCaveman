@@ -21,8 +21,15 @@ try { cfg = require('./caveman-config'); } catch (e) { /* standalone: no mode ga
 const SESSIONS_DIR = '.sessions';
 const PAYLOAD_WATCHDOG_MS = 2000;
 
-function isCustomMode(sessionId) {
-  if (!cfg || typeof cfg.resolveActiveMode !== 'function') return false;
+function isCustomMode(data, sessionId) {
+  if (!cfg) return false;
+  // Codex does not persist Claude's per-session mode files. Its SessionStart
+  // hook resolves the configured default for the session cwd, so mirror that
+  // decision here when Codex identifies the completed turn with turn_id.
+  if (typeof data.turn_id === 'string' && typeof cfg.getDefaultMode === 'function') {
+    return cfg.getDefaultMode(typeof data.cwd === 'string' ? data.cwd : undefined) === 'custom';
+  }
+  if (typeof cfg.resolveActiveMode !== 'function') return false;
   const claudeDir = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');
   return cfg.resolveActiveMode(claudeDir, sessionId) === 'custom';
 }
@@ -59,7 +66,7 @@ function logTurn(payload) {
   if (!sessionId) return;                                  // also blocks path traversal via the id
   const text = data.last_assistant_message;
   if (typeof text !== 'string' || !text.trim()) return;
-  if (!isCustomMode(sessionId)) return;
+  if (!isCustomMode(data, sessionId)) return;
 
   const dir = path.join(typeof data.cwd === 'string' && data.cwd ? data.cwd : process.cwd(), SESSIONS_DIR);
   fs.mkdirSync(dir, { recursive: true });

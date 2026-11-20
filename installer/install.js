@@ -891,7 +891,10 @@ function installViaSkills(ctx, prov) {
   const r = runSpawn('npx', args, null, opts.dryRun);
   if (spawnOk(r)) {
     results.installed.push(prov.id);
-    if (prov.id === 'codex' && opts.withHooks !== false) installCodexHook(ctx);
+    if (prov.id === 'codex') {
+      installCodexCustomSkill(ctx);
+      if (opts.withHooks !== false) installCodexHook(ctx);
+    }
     if (prov.id === 'cursor') installCursorNative(ctx);
     if (prov.id === 'copilot') installCopilotCliHook(ctx);
   } else results.failed.push([prov.id, `npx skills add (${prov.profile}) failed`]);
@@ -917,23 +920,58 @@ function codexHookScript(home) {
   return path.join(home, CODEX_PAYLOAD_DIR, 'hooks', 'codex-sessionstart.js');
 }
 
-// Drop every SessionStart handler that runs our script, and any group it
+function codexSessionLogScript(home) {
+  return path.join(home, CODEX_PAYLOAD_DIR, 'hooks', 'caveman-session-log.js');
+}
+
+function codexSkillsHome() {
+  return path.join(os.homedir(), '.agents', 'skills');
+}
+
+function installCodexCustomSkill(ctx) {
+  const { note, warn, opts, repoRoot, results } = ctx;
+  if (!repoRoot || !fs.existsSync(path.join(repoRoot, 'skills', 'custom', 'SKILL.md'))) {
+    warn('  skipped Codex custom skill: skills/custom/SKILL.md is unavailable');
+    results.failed.push(['codex-custom-skill', 'skills/custom/SKILL.md unavailable']);
+    return;
+  }
+  const root = codexSkillsHome();
+  if (opts.dryRun) {
+    note(`  would install custom into ${path.join(root, 'custom')}`);
+    return;
+  }
+  try {
+    OWNED.installOwned({
+      root, integration: 'codex-custom-skill', force: opts.force, note,
+      operations: [{
+        relativePath: 'custom',
+        write: (stage) => OWNED.copyPath(path.join(repoRoot, 'skills', 'custom'), stage),
+      }],
+    });
+    note(`  installed Codex custom skill into ${path.join(root, 'custom')}`);
+  } catch (error) {
+    warn(`  Codex custom skill install failed: ${error.message}`);
+    results.failed.push(['codex-custom-skill', error.message]);
+  }
+}
+
+// Drop every handler for an event that runs our script, and any group it
 // leaves empty. Returns the index of the first group that held one, or -1.
 // Match the quoted path exactly as installCodexHook writes it: hookCommand
 // escapes $ " ` \ and turns Windows separators into /.
-function stripCodexHook(doc, script) {
-  const list = doc.hooks && doc.hooks.SessionStart;
+function stripCodexHook(doc, event, script) {
+  const list = doc.hooks && doc.hooks[event];
   if (!Array.isArray(list)) return -1;
   const needle = PLATFORM_PATHS.hookCommand(script, []);
   const ours = (h) => h && typeof h.command === 'string' && h.command.includes(needle);
   const at = list.findIndex((e) => e && Array.isArray(e.hooks) && e.hooks.some(ours));
   if (at === -1) return -1;
-  doc.hooks.SessionStart = list.filter((e) => {
+  doc.hooks[event] = list.filter((e) => {
     if (!e || !Array.isArray(e.hooks) || !e.hooks.some(ours)) return true;
     e.hooks = e.hooks.filter((h) => !ours(h));
     return e.hooks.length > 0;
   });
-  if (doc.hooks.SessionStart.length === 0) delete doc.hooks.SessionStart;
+  if (doc.hooks[event].length === 0) delete doc.hooks[event];
   if (Object.keys(doc.hooks).length === 0) delete doc.hooks;
   return at;
 }
@@ -942,7 +980,8 @@ function codexHooksDocOk(doc) {
   if (!doc || typeof doc !== 'object' || Array.isArray(doc)) return false;
   if (doc.hooks === undefined) return true;
   if (!doc.hooks || typeof doc.hooks !== 'object' || Array.isArray(doc.hooks)) return false;
-  return doc.hooks.SessionStart === undefined || Array.isArray(doc.hooks.SessionStart);
+  return (doc.hooks.SessionStart === undefined || Array.isArray(doc.hooks.SessionStart))
+    && (doc.hooks.Stop === undefined || Array.isArray(doc.hooks.Stop));
 }
 
 function installCodexHook(ctx) {
@@ -950,6 +989,7 @@ function installCodexHook(ctx) {
   const home = codexHome();
   const hooksPath = path.join(home, 'hooks.json');
   const script = codexHookScript(home);
+  const sessionLogScript = codexSessionLogScript(home);
   if (!repoRoot) {
     note(`  skipped Codex always-on hook: needs the full caveman package (npx -y github:${REPO} -- --only codex)`);
     results.skipped.push(['codex-hooks', 'needs the full caveman package']);
@@ -965,7 +1005,7 @@ function installCodexHook(ctx) {
   }
   if (opts.dryRun) {
     note(`  would install the owned caveman hook payload under ${path.join(home, CODEX_PAYLOAD_DIR)}`);
-    note(`  would merge a caveman SessionStart entry into ${hooksPath}`);
+    note(`  would merge caveman SessionStart and Stop entries into ${hooksPath}`);
     return;
   }
   // Read before writing anything: an unreadable hooks.json leaves no orphan payload.
@@ -982,7 +1022,7 @@ function installCodexHook(ctx) {
         relativePath: CODEX_PAYLOAD_DIR,
         write: (stage) => {
           OWNED.copyPath(path.join(repoRoot, '.codex', 'codex-sessionstart.js'), path.join(stage, 'hooks', 'codex-sessionstart.js'));
-          for (const f of ['caveman-config.js', 'package.json']) {
+          for (const f of ['caveman-config.js', 'caveman-session-log.js', 'package.json']) {
             OWNED.copyPath(path.join(repoRoot, 'src', 'hooks', f), path.join(stage, 'hooks', f));
           }
           for (const id of CODEX_HOOK_SKILLS) {
@@ -994,7 +1034,8 @@ function installCodexHook(ctx) {
     // Replace in place, so a re-run leaves an unchanged entry byte-identical
     // (Codex keys hook trust to the definition).
     const before = JSON.stringify(doc);
-    const at = stripCodexHook(doc, script);
+    const at = stripCodexHook(doc, 'SessionStart', script);
+    const stopAt = stripCodexHook(doc, 'Stop', sessionLogScript);
     if (!doc.hooks) doc.hooks = {};
     const list = doc.hooks.SessionStart || [];
     list.splice(at === -1 ? list.length : Math.min(at, list.length), 0, {
@@ -1006,12 +1047,17 @@ function installCodexHook(ctx) {
       hooks: [{ type: 'command', command: IS_WIN ? 'node ' + PLATFORM_PATHS.hookCommand(script, []) : PLATFORM_PATHS.hookCommand(absoluteNodePath(), [script]), timeout: 5, statusMessage: 'Loading caveman mode' }],
     });
     doc.hooks.SessionStart = list;
+    const stop = doc.hooks.Stop || [];
+    stop.splice(stopAt === -1 ? stop.length : Math.min(stopAt, stop.length), 0, {
+      hooks: [{ type: 'command', command: IS_WIN ? 'node ' + PLATFORM_PATHS.hookCommand(sessionLogScript, []) : PLATFORM_PATHS.hookCommand(absoluteNodePath(), [sessionLogScript]), timeout: 5 }],
+    });
+    doc.hooks.Stop = stop;
     if (JSON.stringify(doc) === before) {
-      note(`  ${hooksPath} already has the caveman SessionStart hook`);
+      note(`  ${hooksPath} already has the caveman SessionStart and Stop hooks`);
     } else {
       SETTINGS.validateHookFields(doc);
       SETTINGS.writeSettings(hooksPath, doc);
-      note(`  merged caveman SessionStart hook into ${hooksPath}`);
+      note(`  merged caveman SessionStart and Stop hooks into ${hooksPath}`);
     }
     note('  first Codex launch: run /hooks and trust the caveman hook so it can run');
     results.installed.push('codex-hooks');
@@ -1257,9 +1303,9 @@ function installAntigravityCli(ctx) {
 // opencode.json with a "plugin" array entry. Mirrors the Claude Code hook
 // architecture as closely as opencode allows — only the statusline is missing
 // (opencode's TUI exposes no plugin-writable badge).
-const OPENCODE_SKILL_DIRS  = ['caveman', 'ultracave', 'megacave', 'caveman-commit', 'caveman-review', 'caveman-help', 'caveman-stats', 'caveman-compress', 'cavecrew'];
+const OPENCODE_SKILL_DIRS  = ['caveman', 'ultracave', 'megacave', 'custom', 'caveman-commit', 'caveman-review', 'caveman-help', 'caveman-stats', 'caveman-compress', 'cavecrew'];
 const OPENCODE_AGENT_FILES = ['cavecrew-investigator.md', 'cavecrew-builder.md', 'cavecrew-reviewer.md'];
-const OPENCODE_COMMAND_FILES = ['caveman.md', 'ultracave.md', 'megacave.md', 'caveman-commit.md', 'caveman-review.md', 'caveman-compress.md', 'caveman-stats.md', 'caveman-help.md'];
+const OPENCODE_COMMAND_FILES = ['caveman.md', 'ultracave.md', 'megacave.md', 'custom.md', 'caveman-commit.md', 'caveman-review.md', 'caveman-compress.md', 'caveman-stats.md', 'caveman-help.md'];
 // The directory: opencode 1.x imports it through its package.json main
 // (plugin.js), opencode 2.x loads its server.js. A plugin.js entry worked on
 // 1.x only and made 2.x warn "configured plugin path must be a directory".
@@ -2523,21 +2569,25 @@ function uninstall(ctx) {
       cxClean = false;
       cleanupFailed = true;
       warn(`  could not parse ${cxHooks} — leaving the caveman Codex hook in place.`);
-    } else if (stripCodexHook(doc, codexHookScript(cxHome)) !== -1) {
-      try {
-        if (opts.dryRun) note(`  would remove the caveman SessionStart entry from ${cxHooks}`);
-        else if (Object.keys(doc).length === 0) {
-          fs.unlinkSync(cxHooks);
-          note(`  removed ${cxHooks}`);
-        } else {
-          SETTINGS.validateHookFields(doc);
-          SETTINGS.writeSettings(cxHooks, doc);
-          note(`  removed the caveman SessionStart entry from ${cxHooks}`);
+    } else {
+      const removedStart = stripCodexHook(doc, 'SessionStart', codexHookScript(cxHome));
+      const removedStop = stripCodexHook(doc, 'Stop', codexSessionLogScript(cxHome));
+      if (removedStart !== -1 || removedStop !== -1) {
+        try {
+          if (opts.dryRun) note(`  would remove the caveman SessionStart and Stop entries from ${cxHooks}`);
+          else if (Object.keys(doc).length === 0) {
+            fs.unlinkSync(cxHooks);
+            note(`  removed ${cxHooks}`);
+          } else {
+            SETTINGS.validateHookFields(doc);
+            SETTINGS.writeSettings(cxHooks, doc);
+            note(`  removed the caveman SessionStart and Stop entries from ${cxHooks}`);
+          }
+        } catch (error) {
+          cxClean = false;
+          cleanupFailed = true;
+          warn(`  could not update ${cxHooks}: ${error.message}`);
         }
-      } catch (error) {
-        cxClean = false;
-        cleanupFailed = true;
-        warn(`  could not update ${cxHooks}: ${error.message}`);
       }
     }
   }
@@ -2549,6 +2599,14 @@ function uninstall(ctx) {
       cleanupFailed = true;
       warn(`  Codex hook payload cleanup failed: ${error.message}`);
     }
+  }
+
+  try {
+    const removed = OWNED.uninstallOwned({ root: codexSkillsHome(), integration: 'codex-custom-skill', dryRun: opts.dryRun, note, warn });
+    if (removed.changed.length) cleanupFailed = true;
+  } catch (error) {
+    cleanupFailed = true;
+    warn(`  Codex custom skill cleanup failed: ${error.message}`);
   }
 
   // Grok Build always-on block. The marker fence is the ownership signal;

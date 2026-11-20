@@ -63,6 +63,31 @@ test('other mode: writes nothing', (t) => {
   assert.equal(fs.existsSync(path.join(f.project, '.sessions')), false);
 });
 
+test('Codex Stop payload: configured custom default logs without Claude session state', (t) => {
+  const f = fixture(t, null);
+  run({
+    env: { ...f.env, CAVEMAN_DEFAULT_MODE: 'custom' },
+    payload: {
+      session_id: SID,
+      turn_id: 'turn-1',
+      transcript_path: f.transcript,
+      cwd: f.project,
+      last_assistant_message: 'odpowiedź Codexa',
+    },
+  });
+  const line = JSON.parse(fs.readFileSync(logFile(f.project), 'utf8'));
+  assert.equal(line.text, 'odpowiedź Codexa');
+});
+
+test('Codex Stop payload: non-custom default writes nothing', (t) => {
+  const f = fixture(t, null);
+  run({
+    env: { ...f.env, CAVEMAN_DEFAULT_MODE: 'caveman' },
+    payload: { session_id: SID, turn_id: 'turn-1', cwd: f.project, last_assistant_message: 'x' },
+  });
+  assert.equal(fs.existsSync(path.join(f.project, '.sessions')), false);
+});
+
 test('invalid session id or empty answer: writes nothing', (t) => {
   const f = fixture(t, 'custom');
   run({ env: f.env, payload: { session_id: '../../evil', cwd: f.project, last_assistant_message: 'x' } });

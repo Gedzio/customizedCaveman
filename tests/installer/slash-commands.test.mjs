@@ -67,7 +67,7 @@ test('#403 Gemini stats command uses native host statistics without entering the
 // Every command documented for Claude Code. Each needs a .toml (Gemini
 // extension) plus exactly one Claude Code provider — a skill directory or a
 // flat command .md, never both.
-const DOCUMENTED_COMMANDS = ['caveman', 'caveman-commit', 'caveman-review', 'caveman-stats', 'caveman-init'];
+const DOCUMENTED_COMMANDS = ['caveman', 'custom', 'caveman-commit', 'caveman-review', 'caveman-stats', 'caveman-init'];
 const SKILLS_DIR = path.join(REPO_ROOT, 'skills');
 
 for (const name of DOCUMENTED_COMMANDS) {
