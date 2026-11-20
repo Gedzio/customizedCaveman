@@ -273,6 +273,7 @@ In your agent:
 | Command | What it does |
 |---|---|
 | `/caveman` · `/ultracave` · `/megacave` | The voice, the grunt, the 文言文. `/caveman status` shows the mode, `/caveman off` stops it |
+| `/custom` | Evidence-marked, numbered answers and full completed-turn logging in `.sessions/` |
 | `/caveman-commit` | One-line Conventional Commit |
 | `/caveman-review` | One finding per line: `L42: 🔴 null deref. Guard it.` |
 | `/caveman-compress <file>` | Shrinks memory files and backs up the original |

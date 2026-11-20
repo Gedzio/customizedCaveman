@@ -96,9 +96,9 @@ Already inside a Claude Code session? The same Claude Code install as slash comm
 
 "Soft probe" = installer won't auto-detect these without `--only <id>` because there's no reliable always-on signal (no CLI / config-dir-only). Pass the flag when you want them.
 
-For "auto-activates? No" agents, invoke the Caveman skill using the host's skill menu, `/caveman` where supported (`$caveman` in Codex), or a prompt naming the skill. Enable skills first if your host requires it: Augment has a Skills beta setting; AiderDesk requires Skills Tools in the active agent profile; custom Kiro agents need skill resources.
+For "auto-activates? No" agents, invoke the Caveman skill using the host's skill menu, `/caveman` where supported (`$caveman` in Codex), or a prompt naming the skill. Custom mode is `/custom` where custom slash commands are supported; Codex exposes it as `$custom` and in `/skills`, because its slash-command palette is built in. Enable skills first if your host requires it: Augment has a Skills beta setting; AiderDesk requires Skills Tools in the active agent profile; custom Kiro agents need skill resources.
 
-**Pick the mode new sessions start in.** Put `{"defaultMode": "ultracave"}` (or `"caveman"`, `"megacave"`, `"off"`) in `~/.config/caveman/config.json`, or in a `.caveman.json` at a project root for just that project.
+**Pick the mode new sessions start in.** Put `{"defaultMode": "ultracave"}` (or `"caveman"`, `"megacave"`, `"custom"`, `"off"`) in `~/.config/caveman/config.json`, or in a `.caveman.json` at a project root for just that project.
 
 Scripted Claude Code runs (`claude -p` and the Agent SDK) start with caveman off whatever that file says, so tools that read Claude's reply get plain text. Type `/caveman` in the prompt, or set `CAVEMAN_DEFAULT_MODE=caveman` (or another mode) in their environment, to turn it on.
 
@@ -127,8 +127,8 @@ Each row prints the agent id, profile slug (where applicable), and whether it wa
 
 ### Codex
 
-With `codex` on your PATH, `npx -y github:JuliusBrussee/caveman -- --only codex`
-installs the skills and a small start-of-session hook. Every new Codex session
+With `codex` on your PATH, `node installer/install.js --only codex` from this fork
+installs its `custom` skill plus the upstream skills and two small lifecycle hooks. Every new Codex session
 (and every `/clear` or context compaction) then starts in caveman, following
 your configured default mode — including `off`. Codex asks you to review new hooks: run `/hooks` once in
 Codex and trust the caveman one. Hooks are on by default in current Codex; if
@@ -136,15 +136,17 @@ Codex and trust the caveman one. Hooks are on by default in current Codex; if
 `~/.codex/config.toml`.
 
 The hook files live in `$CODEX_HOME/caveman/` (default `~/.codex/caveman/`) and
-one entry is added to `$CODEX_HOME/hooks.json`. Re-running never duplicates it.
-`--no-hooks` keeps the skills-only, per-session behavior: type `$caveman`.
-`--uninstall` removes only caveman's entry and files. Use the same `CODEX_HOME`
+`SessionStart` plus `Stop` entries are added to `$CODEX_HOME/hooks.json`. While
+custom is the configured mode, `Stop` appends each completed answer to the
+project's `.sessions/<session-id>.jsonl`. Re-running never duplicates either entry.
+`--no-hooks` keeps the skills-only, per-session behavior: type `$custom` or select
+custom from `/skills`. `--uninstall` removes only caveman's entries and files. Use the same `CODEX_HOME`
 for install and uninstall.
 
 ### Oh My Pi (OMP)
 
 With `omp` on your PATH, run `node installer/install.js --only omp` from this clone,
-then restart OMP. The native plugin adds nine skills, eight commands, Cavecrew
+then restart OMP. The native plugin adds ten skills, nine commands, Cavecrew
 presets, a CAVEMAN badge, and Caveman instructions on each agent turn. Commands
 such as `/ultracave` and `stop caveman` instruct the model; the badge indicates
 that the plugin is loaded. Host lifecycle and prompt delivery were checked with
