@@ -126,6 +126,9 @@ swoja podstawe — ZAWSZE, nie tylko przy waznych. Brak markera nie moze znaczyc
   wyjscie ("jak nie wybierzesz, przyjme A").
   **Kontrakt czytelnika:** uzytkownik skanuje TYLKO `[POTRZEBUJE]` — tam musi
   zareagowac; cala reszta jest do czytania biernego.
+- `[POTRZEBUJE WIELE]` — odmiana `[POTRZEBUJE]` WYLACZNIE dla pytania decyzyjnego, w
+  ktorym uzytkownik moze wybrac kilka opcji naraz (sekcja 9e). Wszystko inne, co
+  dotyczy `[POTRZEBUJE]`, dotyczy jej tak samo.
 
 ### Waga i bezpieczenstwo
 
@@ -386,10 +389,15 @@ wyjasnienie, MUSI miec unikalny adres w tej odpowiedzi.
   wiodacego, a koncowa kropka deklaracji nie nalezy do identyfikatora:
 
   ```text
-  point     = positive-int, { ".", positive-int };
+  point     = positive-int, { ".", positive-int }, [ option ];
+  option    = letter, { ".", positive-int };
+  letter    = "a" | "b" | ... | "z";
   target    = "^", point, ".";
   reference = "#", (positive-int | "this"), "/", point;
   ```
+
+- Litera na koncu numeru (`2.1a`) oznacza WYLACZNIE opcje pytania decyzyjnego `2.1`
+  (sekcja 9e). Poza opcjami numer sklada sie z samych liczb.
 
 - Wewnatrz tworzonej odpowiedzi uzywaj `#this/numer-punktu`, np. `#this/1.2.1`.
   `this` oznacza WYLACZNIE biezaca odpowiedz, w ktorej stoi referencja. Nie uzywaj
@@ -420,25 +428,43 @@ wyjasnienie, MUSI miec unikalny adres w tej odpowiedzi.
 
 ### 9e. Decyzje i opcje
 
-- Pytanie decyzyjne jest numerowanym wezlem z `[POTRZEBUJE]`. Kazda opcja jest jego
-  numerowanym dzieckiem, nigdy litera ani nienumerowany punktor.
-- Uzytkownik moze wybrac opcje, podajac jej pelna lub skrocona referencje. Traktuj
-  sama referencje do opcji jako jej wybor, chyba ze dopisany czasownik wskazuje inna
-  intencje, np. `#16/1.2.3 wytlumacz` oznacza prosbe o wyjasnienie, nie wybor.
+- Pytanie decyzyjne jest numerowanym wezlem z `[POTRZEBUJE]` (wybor jednej opcji) albo
+  `[POTRZEBUJE WIELE]` (mozna wybrac kilka opcji naraz).
+- Kazda opcja ma numer pytania z doklejona mala litera: opcje pytania `2.1` to `2.1a`,
+  `2.1b`, `2.1c` itd., nadawane po kolei od `a`. Litera oznacza wylacznie opcje, wiec
+  po samym numerze widac, co mozna wybrac.
+- Uzytkownik wybiera opcje, podajac sama jej referencje, np. `#16/2.1b`; przy
+  `[POTRZEBUJE WIELE]` podaje kilka referencji, np. `#16/2.1a #16/2.1c`. Traktuj sama
+  referencje do opcji jako jej wybor, chyba ze dopisany czasownik wskazuje inna
+  intencje, np. `#16/2.1b wytlumacz` oznacza prosbe o wyjasnienie, nie wybor.
 - Wszystkie realne opcje pokazuj bez sztucznego limitu. Nie dodawaj opcji "inne",
   bo uzytkownik zawsze moze napisac wlasna odpowiedz.
-- Rekomendacja, jezeli istnieje, jest kolejnym numerowanym dzieckiem pytania i
-  wskazuje adres rekomendowanej opcji.
-- Gdy po etykietach nie widac skutku opcji, kazda opcja dostaje porownywalne,
-  numerowane dziecko ze scenariuszem z tej samej sytuacji.
+- Rekomendacja, jezeli istnieje, jest zwyklym numerowanym dzieckiem pytania (`2.1.1`),
+  nie litera, bo sama nie jest opcja do wybrania; wskazuje adres rekomendowanej opcji.
+- Gdy po etykietach nie widac skutku opcji, kazda opcja dostaje porownywalne
+  numerowane dziecko ze scenariuszem z tej samej sytuacji: scenariusz opcji `2.1a` ma
+  numer `2.1a.1`.
+- Domyslny wybor podajesz w nawiasie pytania; przy `[POTRZEBUJE WIELE]` moze to byc
+  kilka referencji.
 
-Staly format:
+Staly format — wybor jednej opcji:
 
 ```
-^2.1. [POTRZEBUJE] Pytanie decyzyjne? (twardy stop / domyslnie: #this/2.1.2)
-^2.1.1. [PRZYPUSZCZENIE] Pierwsza opcja — skutek albo koszt.
-^2.1.2. [PRZYPUSZCZENIE] Druga opcja — skutek albo koszt.
-^2.1.3. [OPINIA] Rekomenduje #this/2.1.2, poniewaz ...
+^2.1. [POTRZEBUJE] Pytanie decyzyjne? (twardy stop / domyslnie: #this/2.1b)
+^2.1a. [PRZYPUSZCZENIE] Pierwsza opcja — skutek albo koszt.
+^2.1a.1. [PRZYPUSZCZENIE] Scenariusz: co sie stanie po wyborze pierwszej opcji.
+^2.1b. [PRZYPUSZCZENIE] Druga opcja — skutek albo koszt.
+^2.1b.1. [PRZYPUSZCZENIE] Scenariusz: to samo zdarzenie po wyborze drugiej opcji.
+^2.1.1. [OPINIA] Rekomenduje #this/2.1b, poniewaz ...
+```
+
+Wybor kilku opcji:
+
+```
+^2.2. [POTRZEBUJE WIELE] Ktore elementy dodac? (domyslnie: #this/2.2a, #this/2.2c)
+^2.2a. [PRZYPUSZCZENIE] Pierwszy element — koszt.
+^2.2b. [PRZYPUSZCZENIE] Drugi element — koszt.
+^2.2c. [PRZYPUSZCZENIE] Trzeci element — koszt.
 ```
 
 ### 9f. Bilans i statusy przy 2+ problemach lub zadaniach
@@ -479,10 +505,10 @@ mysl, do ktorej uzytkownik moze wrocic, ma jeden stabilny numer.
 ^2.1.1. [FAKT] Osobno komentowalny szczegol tego dowodu.
 ^2.2. [OPINIA] Ocena z uzasadnieniem.
 ^3. Decyzja
-^3.1. [POTRZEBUJE] Robimy X? (domyslnie: #this/3.1.2)
-^3.1.1. [PRZYPUSZCZENIE] Tak — koszt Y.
-^3.1.2. [FAKT] Nie — zostaje sprawdzony stan obecny.
-^3.1.3. [OPINIA] Rekomenduje #this/3.1.2, poniewaz nie zmienia sprawdzonego stanu.
+^3.1. [POTRZEBUJE] Robimy X? (domyslnie: #this/3.1b)
+^3.1a. [PRZYPUSZCZENIE] Tak — koszt Y.
+^3.1b. [FAKT] Nie — zostaje sprawdzony stan obecny.
+^3.1.1. [OPINIA] Rekomenduje #this/3.1b, poniewaz nie zmienia sprawdzonego stanu.
 ```
 
 ### 9h. Znaczniki oceny i zmiany
