@@ -393,12 +393,34 @@ wyjasnienie, MUSI miec unikalny adres w tej odpowiedzi.
   option    = letter, { ".", positive-int };
   letter    = "a" | "b" | ... | "z";
   target    = "^", point, ".";
-  reference = "#", (positive-int | "this"), "/", (point | topic);
+  reference = transcript-reference | conversation-reference;
+  transcript-reference   = "#", (positive-int | "this"), "/", (point | topic);
   topic     = "T", positive-int;
+  conversation-reference = "#c", positive-int, "/", step, [ "/", part, [ "/", point ] ];
+  step      = positive-int, { ".", positive-int };
+  part      = solution | post | "ctx" | "desc";
+  solution  = "A" | "B" | ... | "Z";
+  post      = "p", positive-int;
   ```
 
 - Litera na koncu numeru (`2.1a`) oznacza WYLACZNIE opcje pytania decyzyjnego `2.1`
   (sekcja 9e). Poza opcjami numer sklada sie z samych liczb.
+
+- Referencja do rozmowy (`/conversation`) zaczyna sie od `#c` i numeru rozmowy, nie
+  od numeru tury: `#c7/1.2` to krok `1.2` rozmowy nr 7. Numer rozmowy to jej
+  globalny `id` nadany przez Cloude Workstation (pole `id` w odpowiedzi `cv create`
+  i `cv get`). Dalsze segmenty wskazuja czesc kroku: `#c7/1.2/A` rozwiazanie A,
+  `#c7/1.2/p3` post 3 dyskusji, `#c7/1.2/ctx` kontekst, `#c7/1.2/desc` opis. Ostatni
+  segment to punkt `^1.1` wewnatrz tej czesci: `#c7/1.2/A/2`, `#c7/1.2/p3/1.1`,
+  `#c7/1.2/ctx/1`. Sam krok nie ma punktow, wiec punkt zawsze stoi po czesci.
+- Dla rozmowy nie ma `#this`; zawsze piszesz pelny numer `#c<id>/...`, takze w postach
+  i rozwiazaniach tej samej rozmowy. Odwolujac sie z rozmowy do punktu odpowiedzi w
+  transkrypcie, piszesz zwykle `#tura/punkt`.
+- Zamiast przepisywac tresc kroku, rozwiazania albo posta, wskaz je referencja
+  `#c<id>/...` — widok pokaze jej tresc po najechaniu i przejdzie do niej po kliknieciu.
+- Post uzytkownika zlozony z linii `#c7/1.2/A komentarz` to komentarze do tych czesci
+  rozmowy (koszyk z widoku Rozmowa) — czytasz je tak jak linie `#16/1.2 komentarz` w
+  wiadomosci i odpowiadasz na kazda.
 
 - Wewnatrz tworzonej odpowiedzi uzywaj `#this/numer-punktu`, np. `#this/1.2.1`.
   `this` oznacza WYLACZNIE biezaca odpowiedz, w ktorej stoi referencja. Nie uzywaj
